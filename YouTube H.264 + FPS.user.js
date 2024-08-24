@@ -18,6 +18,21 @@
 const DISALLOWED_TYPES_REGEX = /webm|vp8|vp9|av01/i;
 
 (function() {
+    const codecsToCheck = [
+    'video/webm; codecs="vp8"',         // WebM with VP8 codec
+    'video/webm; codecs="vp9"',         // WebM with VP9 codec
+    'video/webm; codecs="av01"',        // WebM with AV1 codec
+    'video/mp4; codecs="avc1.42E01E"',  // MP4 with H.264 codec
+    'video/mp4; codecs="hev1.1.6.L93.B0"', // MP4 with HEVC codec
+    'video/ogg; codecs="theora"',       // Ogg with Theora codec
+    'video/ogg; codecs="vp8"',          // Ogg with VP8 codec
+    'video/ogg; codecs="vp9"',          // Ogg with VP9 codec
+    'video/mp4; codecs="vp9"',          // MP4 with VP9 codec
+    'video/mp4; codecs="av01"',         // MP4 with AV1 codec
+    'video/x-matroska; codecs="avc1.42E01E"', // Matroska with H.264 codec
+    'video/x-matroska; codecs="vp9"',   // Matroska with VP9 codec
+    'video/x-matroska; codecs="av01"'   // Matroska with AV1 codec
+];
     const mediaSource = window.MediaSource;
 
     if (!mediaSource) return;
@@ -31,4 +46,8 @@ const DISALLOWED_TYPES_REGEX = /webm|vp8|vp9|av01/i;
 
         return originalIsTypeSupported(type);
     };
+    codecsToCheck.forEach(type => {
+    const isSupported = MediaSource.isTypeSupported(type);
+    console.log(`${type} supported:`, isSupported);
+});
 })();

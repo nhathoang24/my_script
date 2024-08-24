@@ -10,7 +10,7 @@
           "*://www.youtube.com/*",
           "*://*.youtube.com/*"
         ],
-        "lastInstallURL": "https://raw.githubusercontent.com/FiorenMas/Userscripts/release/release/ABPVN20AdsBlock.user.js",
+        "lastInstallURL": "https://raw.githubusercontent.com/abpvn/abpvn/master/script/abpvn.js",
         "pathMap": {}
       },
       "config": {
@@ -19,8 +19,8 @@
         "shouldUpdate": 1
       },
       "position": 1,
-      "lastModified": 1719897625907,
-      "lastUpdated": 1719897625907
+      "lastModified": 1722020274343,
+      "lastUpdated": 1722020274343
     },
     "Disable YouTube AutoPause": {
       "custom": {
@@ -41,25 +41,6 @@
       "lastModified": 1716433887483,
       "lastUpdated": 1712419945497
     },
-    "Instagram Download Button": {
-      "custom": {
-        "origInclude": true,
-        "origExclude": true,
-        "origMatch": true,
-        "origExcludeMatch": true,
-        "homepageURL": "https://greasyfork.org/vi/scripts/406535-instagram-download-button",
-        "lastInstallURL": "https://update.greasyfork.org/scripts/406535/Instagram%20Download%20Button.user.js",
-        "pathMap": {}
-      },
-      "config": {
-        "enabled": 1,
-        "removed": 0,
-        "shouldUpdate": 1
-      },
-      "position": 3,
-      "lastModified": 1712419946099,
-      "lastUpdated": 1712419946099
-    },
     "Return YouTube Dislike": {
       "custom": {
         "origInclude": true,
@@ -70,12 +51,12 @@
         "pathMap": {}
       },
       "config": {
-        "enabled": true,
+        "enabled": 0,
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 4,
-      "lastModified": 1716433932914,
+      "position": 3,
+      "lastModified": 1724042909116,
       "lastUpdated": 1713524460601
     },
     "Voz kia": {
@@ -91,7 +72,7 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 5,
+      "position": 4,
       "lastModified": 1720369613527,
       "lastUpdated": 1720369613527
     },
@@ -110,7 +91,7 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 6,
+      "position": 5,
       "lastModified": 1720586435773,
       "lastUpdated": 1720586435773
     },
@@ -129,7 +110,7 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 7,
+      "position": 6,
       "lastModified": 1720012865148,
       "lastUpdated": 1720012865148
     },
@@ -144,13 +125,13 @@
         "pathMap": {}
       },
       "config": {
-        "enabled": 0,
+        "enabled": 1,
         "removed": 0,
         "shouldUpdate": 2
       },
-      "position": 8,
-      "lastModified": 1713153257471,
-      "lastUpdated": 1707396812818
+      "position": 7,
+      "lastModified": 1724169193720,
+      "lastUpdated": 1724169193720
     },
     "YouTube- Force html5_exponential_memory_for_sticky": {
       "custom": {
@@ -167,7 +148,7 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 9,
+      "position": 8,
       "lastModified": 1719637054365,
       "lastUpdated": 1719637040711
     },
@@ -186,7 +167,7 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 10,
+      "position": 9,
       "lastModified": 1720104789796,
       "lastUpdated": 1714646463719
     },
@@ -205,8 +186,8 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 11,
-      "lastModified": 1719631160093,
+      "position": 10,
+      "lastModified": 1724169664044,
       "lastUpdated": 1719631160093
     },
     "AdGuard Popup Blocker (Beta)": {
@@ -215,7 +196,7 @@
         "origExclude": true,
         "origMatch": true,
         "origExcludeMatch": true,
-        "lastInstallURL": "https://raw.githubusercontent.com/FiorenMas/Userscripts/release/release/popupblocker.user.js",
+        "lastInstallURL": "https://userscripts.adtidy.org/beta/popup-blocker/2.5/popupblocker.user.js",
         "pathMap": {}
       },
       "config": {
@@ -223,28 +204,9 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 12,
-      "lastModified": 1719632129222,
-      "lastUpdated": 1719632129222
-    },
-    "Clean Tracking URLs": {
-      "custom": {
-        "origInclude": true,
-        "origExclude": true,
-        "origMatch": true,
-        "origExcludeMatch": true,
-        "homepageURL": "https://github.com/FiorenMas/Userscripts/blob/release/release/README.md",
-        "lastInstallURL": "https://raw.githubusercontent.com/FiorenMas/Userscripts/release/release/E8B79FE8B8AAE993BEE68EA5E58780E58C96.user.js",
-        "pathMap": {}
-      },
-      "config": {
-        "enabled": false,
-        "removed": 0,
-        "shouldUpdate": 1
-      },
-      "position": 13,
-      "lastModified": 1717598179992,
-      "lastUpdated": 1712420013273
+      "position": 11,
+      "lastModified": 1722020344327,
+      "lastUpdated": 1722020344327
     },
     "FB - Clean my feeds": {
       "custom": {
@@ -261,7 +223,7 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 14,
+      "position": 12,
       "lastModified": 1721574803276,
       "lastUpdated": 1720185748720
     },
@@ -280,7 +242,7 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 15,
+      "position": 13,
       "lastModified": 1719631211178,
       "lastUpdated": 1719631211178
     },
@@ -299,7 +261,7 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 16,
+      "position": 14,
       "lastModified": 1721578308605,
       "lastUpdated": 1721578308605
     },
@@ -318,8 +280,8 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 17,
-      "lastModified": 1717692128630,
+      "position": 15,
+      "lastModified": 1722617851133,
       "lastUpdated": 1717692128630
     },
     "Additional Bypass": {
@@ -328,7 +290,7 @@
         "origExclude": true,
         "origMatch": true,
         "origExcludeMatch": true,
-        "lastInstallURL": "https://raw.githubusercontent.com/FiorenMas/Userscripts/release/release/Additional20Bypass.user.js",
+        "lastInstallURL": "https://raw.githubusercontent.com/FiorenMas/Shortlink/release/release/ShortLink2-modified.user.js",
         "pathMap": {}
       },
       "config": {
@@ -336,33 +298,9 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 18,
-      "lastModified": 1719632097069,
-      "lastUpdated": 1719632097069
-    },
-    "Bypass All Shortlinks": {
-      "custom": {
-        "origInclude": true,
-        "origExclude": true,
-        "origMatch": true,
-        "origExcludeMatch": true,
-        "excludeMatch": [
-          "*://www.youtube.com/*",
-          "*://*.youtube.com/*",
-          "*://*.instagram.com/*",
-          "*://*.facebook.com/*"
-        ],
-        "lastInstallURL": "https://raw.githubusercontent.com/FiorenMas/Userscripts/release/release/Bypass20All20Shortlinks.user.js",
-        "pathMap": {}
-      },
-      "config": {
-        "enabled": 1,
-        "removed": 0,
-        "shouldUpdate": 1
-      },
-      "position": 19,
-      "lastModified": 1720272193476,
-      "lastUpdated": 1720272193476
+      "position": 16,
+      "lastModified": 1722020413720,
+      "lastUpdated": 1722020413720
     },
     "HTML5 video player enhanced script": {
       "custom": {
@@ -384,9 +322,9 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 20,
-      "lastModified": 1719646704724,
-      "lastUpdated": 1719646704724
+      "position": 17,
+      "lastModified": 1722570868221,
+      "lastUpdated": 1722570868221
     },
     "Selection and Copying Restorer (Universal)": {
       "custom": {
@@ -407,7 +345,7 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 21,
+      "position": 18,
       "lastModified": 1719631445356,
       "lastUpdated": 1719631445356
     },
@@ -418,7 +356,8 @@
         "origMatch": true,
         "origExcludeMatch": true,
         "excludeMatch": [
-          "*://*.instagram.com/*"
+          "*://*.instagram.com/*",
+          "*://*.youtube.com/*"
         ],
         "lastInstallURL": "https://userscripts.adtidy.org/release/adguard-extra/1.0/adguard-extra.user.js",
         "pathMap": {}
@@ -428,28 +367,9 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 22,
-      "lastModified": 1721891686877,
-      "lastUpdated": 1721891686877
-    },
-    "Autopass Cloudflare CAPTCHA in iFrame": {
-      "custom": {
-        "origInclude": true,
-        "origExclude": true,
-        "origMatch": true,
-        "origExcludeMatch": true,
-        "homepageURL": "https://greasyfork.org/en/scripts/489378-autopass-cloudflare-captcha-in-iframe",
-        "lastInstallURL": "https://raw.githubusercontent.com/FiorenMas/Userscripts/release/release/Autopass20Cloudflare20CAPTCHA20in20iFrame.user.js",
-        "pathMap": {}
-      },
-      "config": {
-        "enabled": 0,
-        "removed": 0,
-        "shouldUpdate": 1
-      },
-      "position": 23,
-      "lastModified": 1720369582704,
-      "lastUpdated": 1719632198938
+      "position": 19,
+      "lastModified": 1724169176496,
+      "lastUpdated": 1724169176496
     },
     "PreventPageVisibilityAuto": {
       "custom": {
@@ -466,7 +386,7 @@
         "removed": 0,
         "shouldUpdate": 2
       },
-      "position": 24,
+      "position": 20,
       "lastModified": 1719648800418,
       "lastUpdated": 1719648800418
     },
@@ -483,9 +403,9 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 25,
-      "lastModified": 1722016460662,
-      "lastUpdated": 1722016460662
+      "position": 21,
+      "lastModified": 1722616453317,
+      "lastUpdated": 1722616453317
     },
     "AdsBypasser": {
       "custom": {
@@ -496,7 +416,7 @@
         "excludeMatch": [
           "*://*.instagram.com/*"
         ],
-        "lastInstallURL": "https://raw.githubusercontent.com/FiorenMas/Userscripts/release/release/adsbypasser.full.es7.user.js",
+        "lastInstallURL": "https://adsbypasser.github.io/releases/adsbypasser.full.es7.user.js",
         "pathMap": {}
       },
       "config": {
@@ -504,9 +424,9 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 26,
-      "lastModified": 1719756854150,
-      "lastUpdated": 1719632084058
+      "position": 22,
+      "lastModified": 1722020450582,
+      "lastUpdated": 1722020450582
     },
     "Disable Youtube Annotations": {
       "custom": {
@@ -522,28 +442,9 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 27,
+      "position": 23,
       "lastModified": 1719632213027,
       "lastUpdated": 1719632213027
-    },
-    "Enhanced Bing ChatAI": {
-      "custom": {
-        "origInclude": true,
-        "origExclude": true,
-        "origMatch": true,
-        "origExcludeMatch": true,
-        "homepageURL": "https://github.com/FiorenMas/Userscripts/blob/release/release/README.md",
-        "lastInstallURL": "https://raw.githubusercontent.com/FiorenMas/Userscripts/release/release/Enhanced20Bing20ChatAI.user.js",
-        "pathMap": {}
-      },
-      "config": {
-        "enabled": 1,
-        "removed": 0,
-        "shouldUpdate": 1
-      },
-      "position": 28,
-      "lastModified": 1719646989770,
-      "lastUpdated": 1719646989770
     },
     "YouTube CPU Tamer by DOMMutation": {
       "custom": {
@@ -560,7 +461,7 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 29,
+      "position": 24,
       "lastModified": 1720104792909,
       "lastUpdated": 1719647041032
     },
@@ -579,9 +480,9 @@
         "removed": 0,
         "shouldUpdate": 2
       },
-      "position": 30,
-      "lastModified": 1719648003468,
-      "lastUpdated": 1719648003468
+      "position": 25,
+      "lastModified": 1722020985060,
+      "lastUpdated": 1722020985060
     },
     "X.com to Twitter.com Embedded Tweet in Voz": {
       "custom": {
@@ -594,15 +495,15 @@
         "pathMap": {}
       },
       "config": {
-        "enabled": 1,
+        "enabled": true,
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 31,
-      "lastModified": 1721978133677,
+      "position": 26,
+      "lastModified": 1724504709575,
       "lastUpdated": 1721978133677
     },
-    "Delorean V2 UserScript (NOT A REUPLOAD)": {
+    "Delorean V3 UserScript - Admaven, LootLabs & Linkvertis- Killer": {
       "custom": {
         "origInclude": true,
         "origExclude": true,
@@ -616,11 +517,143 @@
         "removed": 0,
         "shouldUpdate": 1
       },
-      "position": 32,
-      "lastModified": 1721823713066,
-      "lastUpdated": 1721823713066
+      "position": 27,
+      "lastModified": 1724286713722,
+      "lastUpdated": 1724286713722
     },
-    "New script 91porny.com": {
+    "Bypass All Shortlinks Manual Captcha": {
+      "custom": {
+        "origInclude": true,
+        "origExclude": true,
+        "origMatch": true,
+        "origExcludeMatch": true,
+        "lastInstallURL": "https://raw.githubusercontent.com/FiorenMas/Shortlink/release/release/ShortLink3-modified.user.js",
+        "pathMap": {}
+      },
+      "config": {
+        "enabled": 1,
+        "removed": 0,
+        "shouldUpdate": 1
+      },
+      "position": 28,
+      "lastModified": 1723725566270,
+      "lastUpdated": 1723725566270
+    },
+    "IG Helper": {
+      "custom": {
+        "origInclude": true,
+        "origExclude": true,
+        "origMatch": true,
+        "origExcludeMatch": true,
+        "homepageURL": "https://greasyfork.org/en/scripts/404535-ig-helper",
+        "lastInstallURL": "https://update.greasyfork.org/scripts/404535/IG%20Helper.user.js",
+        "pathMap": {}
+      },
+      "config": {
+        "enabled": 1,
+        "removed": 0,
+        "shouldUpdate": 1
+      },
+      "position": 29,
+      "lastModified": 1724404400595,
+      "lastUpdated": 1724404400595
+    },
+    "youtube-adb": {
+      "custom": {
+        "origInclude": true,
+        "origExclude": true,
+        "origMatch": true,
+        "origExcludeMatch": true,
+        "homepageURL": "https://greasyfork.org/en/scripts/459541-youtube%E5%8E%BB%E5%B9%BF%E5%91%8A-youtube-ad-blocker",
+        "lastInstallURL": "https://update.greasyfork.org/scripts/459541/YouTube%E5%8E%BB%E5%B9%BF%E5%91%8A.user.js",
+        "pathMap": {}
+      },
+      "config": {
+        "enabled": 1,
+        "removed": 0,
+        "shouldUpdate": 1
+      },
+      "position": 30,
+      "lastModified": 1722762605226,
+      "lastUpdated": 1722762605226
+    },
+    "Reject serviceWorker Auto": {
+      "custom": {
+        "origInclude": true,
+        "origExclude": true,
+        "origMatch": true,
+        "origExcludeMatch": true,
+        "homepageURL": "https://greasyfork.org/en/scripts/482724-reject-serviceworker-auto",
+        "lastInstallURL": "https://update.greasyfork.org/scripts/482724/Reject%20serviceWorker%20Auto.user.js",
+        "pathMap": {}
+      },
+      "config": {
+        "enabled": 1,
+        "removed": 0,
+        "shouldUpdate": 1
+      },
+      "position": 31,
+      "lastModified": 1723728967465,
+      "lastUpdated": 1722938474457
+    },
+    "Download protected PDF file from Google Drive": {
+      "custom": {
+        "origInclude": true,
+        "origExclude": true,
+        "origMatch": true,
+        "origExcludeMatch": true,
+        "homepageURL": "chrome://newtab/",
+        "lastInstallURL": "https://raw.githubusercontent.com/FiorenMas/Userscripts/release/release/Download20protected20PDF20file20from20Google20Drive.user.js",
+        "pathMap": {}
+      },
+      "config": {
+        "enabled": 1,
+        "removed": 0,
+        "shouldUpdate": 1
+      },
+      "position": 32,
+      "lastModified": 1724042841084,
+      "lastUpdated": 1724042841084
+    },
+    "Microsoft Store Direct Download": {
+      "custom": {
+        "origInclude": true,
+        "origExclude": true,
+        "origMatch": true,
+        "origExcludeMatch": true,
+        "homepageURL": "https://greasyfork.org/en/scripts/394420-microsoft-store-direct-download",
+        "lastInstallURL": "https://update.greasyfork.org/scripts/394420/Microsoft%20Store%20Direct%20Download.user.js",
+        "pathMap": {}
+      },
+      "config": {
+        "enabled": 1,
+        "removed": 0,
+        "shouldUpdate": 1
+      },
+      "position": 33,
+      "lastModified": 1724042893198,
+      "lastUpdated": 1724042893198
+    },
+    "Decode Hex strings on Voz": {
+      "custom": {
+        "origInclude": true,
+        "origExclude": true,
+        "origMatch": true,
+        "origExcludeMatch": true,
+        "homepageURL": "https://greasyfork.org/en/scripts/504506-decode-hex-strings-on-voz",
+        "lastInstallURL": "https://update.greasyfork.org/scripts/504506/Decode%20Hex%20strings%20on%20Voz.user.js",
+        "pathMap": {}
+      },
+      "config": {
+        "enabled": false,
+        "removed": 0,
+        "shouldUpdate": 2
+      },
+      "position": 34,
+      "lastModified": 1724494983989,
+      "lastUpdated": 1724490845731
+    },
+    "Encode-Decode Base64 or Hex with Copy Option": {
       "custom": {
         "origInclude": true,
         "origExclude": true,
@@ -630,20 +663,37 @@
       },
       "config": {
         "enabled": 0,
-        "shouldUpdate": 1,
-        "removed": 0
+        "removed": 0,
+        "shouldUpdate": 1
       },
-      "position": 34,
-      "lastModified": 1722015788892,
-      "lastUpdated": 1722014432120
+      "position": 35,
+      "lastModified": 1724501972649,
+      "lastUpdated": 1724497446701
+    },
+    "Add Custom Element with Popup and Decoding": {
+      "custom": {
+        "origInclude": true,
+        "origExclude": true,
+        "origMatch": true,
+        "origExcludeMatch": true,
+        "pathMap": {}
+      },
+      "config": {
+        "enabled": 1,
+        "removed": 0,
+        "shouldUpdate": 1
+      },
+      "position": 36,
+      "lastModified": 1724520144116,
+      "lastUpdated": 1724520144116
     }
   },
   "settings": {
     "isApplied": true,
     "autoUpdate": 1,
     "updateEnabledScriptsOnly": false,
-    "lastUpdate": 1721978133879,
-    "lastModified": 1719759472182,
+    "lastUpdate": 1724490846021,
+    "lastModified": 1724485899263,
     "showBadge": "unique",
     "badgeColor": "#880088",
     "badgeColorBlocked": "#888888",
@@ -714,12 +764,12 @@
     "Violentmonkey-20Scripts-0aHandlers-20Helper-0a": {
       "UP": "spipe",
       "hlsdomain": "sqooglevideo.com",
-      "livechat": "btrue"
+      "livechat": "bfalse"
     },
     "https-3a-2f-2ftools.thatwind.com-2f-0aMPV-2dM3U8-20Video-20Detector-20and-20Downloader-0a": {
       "shown": "bfalse",
-      "x": "n453",
-      "y": "n21"
+      "x": "n75",
+      "y": "n106"
     },
     "adguard-0aAdGuard-20Popup-20Blocker-20(Beta)-0a": {
       "#id": "s912lj4hywKcauG30Sduqqv2ay9FMW67u",
@@ -765,7 +815,8 @@
       "gm_remain_focus_on_mousedown": "bfalse"
     },
     "PreventPageVisibilityAuto-0aPreventPageVisibilityAuto-0a": {
-      "autoinjectPreventPageVisibilityAuto": "s[\"daniemon.com\",\"copilot.microsoft.com\"]"
+      "autoinjectPreventPageVisibilityAuto": "s[\"daniemon.com\",\"copilot.microsoft.com\"]",
+      "valuePreventPageVisibilityAutofrdl.to": "nNaN"
     },
     "AdsBypasser-0aAdsBypasser-0a": {
       "align_center": "btrue",
@@ -775,6 +826,12 @@
       "redirect_image": "btrue",
       "scale_image": "btrue",
       "version": "n4"
+    },
+    "Violentmonkey-20Scripts-0aBypass-20All-20Shortlinks-20Manual-20Captcha-0a": {
+      "_MonkeyConfig_Bypass_Version_92_4_Settings___cfg": "s{\"Announcements\":\"Add Your ApiKey from nocaptchaai to use Auto Solve Hcaptcha\",\"ApiKey\":\"\",\"SetDelay\":\"5\",\"BlogDelay\":true,\"reCAPTCHA\":false,\"hCaptcha\":false,\"YTShort\":false,\"RightFC\":false,\"BlockFC\":true,\"TimerFC\":false,\"AutoDL\":true}"
+    },
+    "rejectserviceWorkerAuto-0aReject-20serviceWorker-20Auto-0a": {
+      "autoinjectrejectserviceWorkerAuto": "s[\"www.messenger.com\",\"web.telegram.org\"]"
     }
   }
 }

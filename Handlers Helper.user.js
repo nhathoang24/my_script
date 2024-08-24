@@ -3,8 +3,10 @@
 // @include       *://*/*
 // @grant       GM_getValue
 // @grant       GM_setValue
+// @grant       GM_deleteValue
+// @grant       GM_addStyle
 // @grant       GM_registerMenuCommand
-// @version     2.7
+// @version     3.7
 // @author      -
 // @description Helper for protocol_hook.lua
 // @namespace Violentmonkey Scripts
@@ -20,7 +22,7 @@ const live_window_height = 640;
 
 var total_direction = 4;
 var livechat = false;
-var hlsdomain = 'qooglevideo.com';
+var hlsdomain = 'cdn.animevui.com';
 var UP = 'pipe';
 var DOWN = 'ytdl';
 var LEFT = 'stream';
@@ -88,7 +90,7 @@ function attachDrag(elem) {
     var hls = false;
     console.log(attr, type)
     for (i in hlsdomain) {
-      if (attr.indexOf(hlsdomain[i]) != -1) {
+      if (attr.indexOf(hlsdomain[i]) != -1 || document.domain.indexOf(hlsdomain[i]) != -1) {
         if (type == 'stream') {
           attr = attr.replace(/https?:/, 'hls:');
         }
@@ -310,3 +312,38 @@ document.addEventListener('mouseover', function(e) {
     }
   }
 });
+
+if (document.domain == 'www.youtube.com' || document.domain == 'm.youtube.com') {
+    let state = GM_getValue('hh_mobile', 'unset');
+    let dm = location.host || '';
+    let dmc = dm.charAt(0) || '';
+    /*if (state == true && dmc == 'w') {
+      location.host = location.host.replace('www.youtube.com', 'm.youtube.com');
+    } else if (state == false && dmc == 'm') {
+      location.host = location.host.replace('m.youtube.com', 'www.youtube.com');
+    }*/
+    function addMenuCommand(s, url, b) {
+        GM_registerMenuCommand(s, function () {
+            if (b == true) {
+            if (url.indexOf('m.youtube.com') != -1) {
+              GM_setValue('hh_mobile', true);
+            } else if (url.indexOf('www.youtube.com') != -1) {
+              GM_setValue('hh_mobile', false);
+            }
+            } else {
+              GM_deleteValue('hh_mobile');
+            }
+            location.replace(url);
+        });
+    }
+    if (dmc == 'w') {
+        addMenuCommand("Switch to YouTube Mobile persistently", "https://m.youtube.com/?persist_app=1&app=m", true);
+        addMenuCommand("Switch to YouTube Mobile temporarily", "https://m.youtube.com/?persist_app=0&app=m", false);
+    } else if (dmc == 'm') {
+        addMenuCommand("Switch to YouTube Dekstop persistently", "http://www.youtube.com/?persist_app=1&app=desktop", true);
+        addMenuCommand("Switch to YouTube Dekstop temporarily", "http://www.youtube.com/?persist_app=0&app=desktop", false);
+    }
+    if (dmc == 'm') {
+      GM_addStyle('ytm-rich-item-renderer {width: 33%!important;margin: 1px!important;padding: 0px!important;}');
+    }
+}
