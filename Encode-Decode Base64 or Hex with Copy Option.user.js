@@ -15,9 +15,9 @@
     'use strict';
     GM_addStyle(`
         :root {
-            --overlay-bg: rgba(0, 0, 0, 0.6);
-            --overlay-color: #fff;
-            --font-color: #333;
+            --overlay-bg: rgba(0, 0, 0, 0.7);
+            --overlay-color: #ffffff;
+            --font-color: #333333;
             --close-color: #f44336;
             --close-hover-color: #d32f2f;
             --button-bg: #007bff;
@@ -27,7 +27,7 @@
             --copy-hover-bg: #218838;
             --clear-bg: #dc3545;
             --clear-active-bg: #c82333;
-            --shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            --shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
             --transition: 0.3s ease;
         }
         .my-overlay-container {
@@ -47,7 +47,7 @@
         .my-overlay {
             background: var(--overlay-color);
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 10px;
             width: 100%;
             max-width: 600px;
             position: relative;
@@ -58,11 +58,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             position: relative;
         }
         .my-overlay-title-text {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 600;
             color: var(--font-color);
         }
@@ -80,27 +80,28 @@
             flex-direction: column;
         }
         .my-overlay-content label {
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 16px;
         }
         .my-overlay-content select,
         .my-overlay-content textarea {
             width: 100%;
-            margin-bottom: 15px;
-            padding: 10px;
+            margin-bottom: 20px;
+            padding: 12px;
             border: 1px solid #ccc;
             border-radius: 5px;
             box-sizing: border-box;
         }
         .my-overlay-content textarea {
-            height: 100px;
-            font-size: 14px;
-            line-height: 1.4;
+            height: 120px;
+            font-size: 16px;
+            line-height: 1.5;
             resize: vertical;
         }
         .my-button-container {
             display: flex;
-            gap: 15px;
+            gap: 20px;
         }
         .my-button-container button {
             padding: 12px 20px;
@@ -115,7 +116,7 @@
 
         #actionButton {
             background-color: var(--button-bg);
-            color: #fff;
+            color: #ffffff;
         }
 
         #actionButton:hover,
@@ -125,7 +126,7 @@
 
         #copyButton {
             background-color: var(--copy-bg);
-            color: #fff;
+            color: #ffffff;
         }
 
         #copyButton:hover {
@@ -161,7 +162,8 @@
             cursor: pointer;
             z-index: 2147483647;
             user-select: none;
-            background-color: transparent; /* Đảm bảo nút không có màu nền */
+            background-color: transparent;
+            transition: background-color var(--transition);
         }
     `);
     const createToggleButton = () => {
