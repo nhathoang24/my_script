@@ -275,10 +275,21 @@
         });
         const encodeHex = s => Array.from(s, c => c.charCodeAt(0).toString(16).padStart(2, '0')).join(' ').toUpperCase();
         const decodeHex = h => {
-            const cleanedHex = h.replace(/\s+/g, '');
-            return /^[a-fA-F0-9]+$/.test(cleanedHex) ? cleanedHex.match(/../g).map(b => String.fromCharCode(parseInt(b, 16))).join('') : h;
+            try {
+                const cleanedHex = h.replace(/\s+/g, '');
+                if (!/^[a-fA-F0-9]+$/.test(cleanedHex)) throw new Error('Chuỗi hex không hợp lệ');
+                return cleanedHex.match(/../g).map(b => String.fromCharCode(parseInt(b, 16))).join('');
+            } catch (err) {
+                throw new Error('Lỗi khi giải mã hex: ' + err.message);
+            }
         };
-        const decodeBase64 = b => /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/.test(b) ? atob(b) : b;
+        const decodeBase64 = b => {
+            try {
+                return /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/.test(b) ? atob(b) : b;
+            } catch (err) {
+                throw new Error('Lỗi khi giải mã base64');
+            }
+        };
         const encodeBase64 = b => btoa(b);
         document.getElementById('actionButton').addEventListener('click', () => {
             const op = document.getElementById('operationType').value;
@@ -286,16 +297,27 @@
             const input = document.getElementById('inputString').value.trim();
             if (!input) return alert('Vui lòng nhập chuỗi.');
             try {
-                const result = (type === 'base64')
-                    ? (op === 'decode' ? decodeBase64(input) : encodeBase64(input))
-                    : (type === 'hex')
-                        ? (op === 'decode' ? decodeHex(input) : encodeHex(input))
-                        : (op === 'decode' ? decodeURIComponent(input) : encodeURIComponent(input));
-                if (result === input) throw new Error('Invalid input');
+                let result;
+                if (type === 'base64') {
+                    if (op === 'decode' && !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(input)) {   // Kiểm tra tính hợp lệ của chuỗi base64 trước khi giải mã
+                        throw new Error('Chuỗi base64 không hợp lệ');
+                    }
+                    result = (op === 'decode') ? decodeBase64(input) : encodeBase64(input);
+                    if (result === input) throw new Error('Lỗi khi giải mã base64');
+                } else if (type === 'hex') {
+                    if (op === 'decode' && !/^[a-fA-F0-9\s]+$/.test(input)) {   // Kiểm tra tính hợp lệ của chuỗi hex trước khi giải mã
+                        throw new Error('Chuỗi hex không hợp lệ');
+                    }
+                    result = (op === 'decode') ? decodeHex(input) : encodeHex(input);
+                    if (result === input) throw new Error('Lỗi khi giải mã hex');
+                } else {
+                    result = (op === 'decode') ? decodeURIComponent(input) : encodeURIComponent(input);
+                }
+
                 document.getElementById('resultOutput').value = result;
             } catch (err) {
-                console.error('Error:', err);
-                alert('Lỗi: Chuỗi không hợp lệ.');
+                console.error(`Error [${type}]:`, err, 'Input:', input);
+                alert(`Lỗi: ${err.message}`);
             }
         });
         document.getElementById('copyButton').addEventListener('click', async () => {
