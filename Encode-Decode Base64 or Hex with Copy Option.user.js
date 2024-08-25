@@ -163,7 +163,6 @@
             z-index: 2147483647;
             user-select: none;
             background-color: transparent;
-            transition: background-color var(--transition);
         }
     `);
     const createToggleButton = () => {
