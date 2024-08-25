@@ -9,6 +9,7 @@
 // @license      GPL-3.0
 // @run_at       document_idle
 // @grant        GM_addStyle
+// @grant        GM_registerMenuCommand
 // ==/UserScript==
 (function() {
     'use strict';
@@ -179,45 +180,72 @@
         makeDraggable(toggleButton);
     };
     const makeDraggable = (element) => {
-        if (!element) return console.error('Phần tử không tồn tại.');
-        let offsetX, offsetY, startX, startY, isDragging = false;
+    if (!element) return console.error('Phần tử không tồn tại.');
 
-        const moveElement = (e) => {
-            if (!isDragging && (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5)) {
+    let offsetX, offsetY, startX, startY, isDragging = false;
+
+    const setPosition = (x, y) => {
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+    };
+    const moveElement = (e) => {
+        if (!isDragging) {
+            // Kiểm tra nếu chuột đã di chuyển một khoảng cách đủ lớn để bắt đầu kéo
+            if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
                 isDragging = true;
             }
-            if (isDragging) {
-                Object.assign(element.style, {
-                    left: `${e.clientX - offsetX}px`,
-                    top: `${e.clientY - offsetY}px`
-                });
-            }
-        };
+            return;
+        }
+        const rect = element.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        let newLeft = e.clientX - offsetX;
+        let newTop = e.clientY - offsetY;
 
-        const stopDragging = (e) => {
-            if (isDragging) {
-                localStorage.setItem('toggleButtonPosition', JSON.stringify({
-                    top: parseInt(element.style.top, 10),
-                    left: parseInt(element.style.left, 10)
-                }));
-            } else if (e.button === 0 && typeof toggleOverlay === 'function') {
-                toggleOverlay();
-            }
-            document.removeEventListener('mousemove', moveElement);
-            document.removeEventListener('mouseup', stopDragging);
-            isDragging = false;
-        };
-
-        element.addEventListener('mousedown', (e) => {
-            if (e.button !== 0) return;
-            offsetX = e.clientX - element.offsetLeft;
-            offsetY = e.clientY - element.offsetTop;
-            startX = e.clientX;
-            startY = e.clientY;
-            document.addEventListener('mousemove', moveElement);
-            document.addEventListener('mouseup', stopDragging);
-        });
+        newLeft = Math.max(0, Math.min(newLeft, windowWidth - rect.width));
+        newTop = Math.max(0, Math.min(newTop, windowHeight - rect.height));
+        setPosition(newLeft, newTop);
     };
+    const stopDragging = (e) => {
+        if (isDragging) {
+            localStorage.setItem('toggleButtonPosition', JSON.stringify({
+                top: element.style.top,
+                left: element.style.left
+            }));
+        } else if (e.button === 0 && typeof toggleOverlay === 'function') {
+            toggleOverlay();
+        }
+        document.removeEventListener('mousemove', moveElement);
+        document.removeEventListener('mouseup', stopDragging);
+        document.removeEventListener('mouseleave', stopDragging);
+        isDragging = false;
+    };
+    const startDragging = (e) => {
+        if (e.button !== 0) return;
+        const rect = element.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        startX = e.clientX;
+        startY = e.clientY;
+        document.addEventListener('mousemove', moveElement);
+        document.addEventListener('mouseup', stopDragging);
+        document.addEventListener('mouseleave', stopDragging);
+    };
+    element.addEventListener('mousedown', startDragging);
+    const savedPosition = JSON.parse(localStorage.getItem('toggleButtonPosition'));
+    if (savedPosition) {
+        setPosition(
+            parseFloat(savedPosition.left) || 0,
+            parseFloat(savedPosition.top) || 0
+        );
+    }
+};
+    window.addEventListener('load', () => {
+        const toggleButton = document.querySelector('.toggleButtonClass');
+        if (toggleButton) {
+            makeDraggable(toggleButton);
+        }
+    });
     const toggleOverlay = () => {
         const overlayContainer = document.querySelector('.my-overlay-container');
         if (overlayContainer) {
@@ -299,13 +327,13 @@
             try {
                 let result;
                 if (type === 'base64') {
-                    if (op === 'decode' && !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(input)) {   // Kiểm tra tính hợp lệ của chuỗi base64 trước khi giải mã
+                    if (op === 'decode' && !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(input)) {
                         throw new Error('Chuỗi base64 không hợp lệ');
                     }
                     result = (op === 'decode') ? decodeBase64(input) : encodeBase64(input);
                     if (result === input) throw new Error('Lỗi khi giải mã base64');
                 } else if (type === 'hex') {
-                    if (op === 'decode' && !/^[a-fA-F0-9\s]+$/.test(input)) {   // Kiểm tra tính hợp lệ của chuỗi hex trước khi giải mã
+                    if (op === 'decode' && !/^[a-fA-F0-9\s]+$/.test(input)) {
                         throw new Error('Chuỗi hex không hợp lệ');
                     }
                     result = (op === 'decode') ? decodeHex(input) : encodeHex(input);
