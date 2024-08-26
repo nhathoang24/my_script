@@ -1,15 +1,16 @@
 // ==UserScript==
 // @name         Encode/Decode Base64 or Hex with Copy Option
-// @version      1.7
+// @version      1.8
 // @description  Encode or decode Base64 or Hex strings and copy to clipboard
 // @author       itisme
 // @include      https://*
 // @include      http://*
+// @exclude      *://youtube.com/*
+// @exclude      *://github.com/*
 // @icon         https://data.voz.vn/styles/next/xenforo/smilies/popopo/sexy_girl.png?v=01
 // @license      GPL-3.0
 // @run_at       document_idle
 // @grant        GM_addStyle
-// @grant        GM_registerMenuCommand
 // ==/UserScript==
 (function() {
     'use strict';
@@ -163,6 +164,7 @@
             z-index: 2147483647;
             user-select: none;
             background-color: transparent;
+            transition: background-color var(--transition);
         }
     `);
     const createToggleButton = () => {
@@ -307,19 +309,24 @@
             try {
                 const cleanedHex = h.replace(/\s+/g, '');
                 if (!/^[a-fA-F0-9]+$/.test(cleanedHex)) throw new Error('Chuỗi hex không hợp lệ');
+                if (cleanedHex.length % 2 !== 0) throw new Error('Độ dài chuỗi hex không hợp lệ');
                 return cleanedHex.match(/../g).map(b => String.fromCharCode(parseInt(b, 16))).join('');
             } catch (err) {
-                throw new Error('Lỗi khi giải mã hex: ' + err.message);
-            }
-        };
-        const decodeBase64 = b => {
-            try {
-                return /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/.test(b) ? atob(b) : b;
-            } catch (err) {
-                throw new Error('Lỗi khi giải mã base64');
+                throw new Error(err.message);
             }
         };
         const encodeBase64 = b => btoa(b);
+        const decodeBase64 = b => {
+            try {
+                if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/.test(b)) {
+                    throw new Error('Chuỗi base64 không hợp lệ');
+                }
+                return atob(b);
+            } catch (err) {
+                throw new Error(err.message);
+            }
+        };
+
         document.getElementById('actionButton').addEventListener('click', () => {
             const op = document.getElementById('operationType').value;
             const type = document.getElementById('decodeType').value;
@@ -328,21 +335,12 @@
             try {
                 let result;
                 if (type === 'base64') {
-                    if (op === 'decode' && !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(input)) {
-                        throw new Error('Chuỗi base64 không hợp lệ');
-                    }
                     result = (op === 'decode') ? decodeBase64(input) : encodeBase64(input);
-                    if (result === input) throw new Error('Lỗi khi giải mã base64');
                 } else if (type === 'hex') {
-                    if (op === 'decode' && !/^[a-fA-F0-9\s]+$/.test(input)) {
-                        throw new Error('Chuỗi hex không hợp lệ');
-                    }
                     result = (op === 'decode') ? decodeHex(input) : encodeHex(input);
-                    if (result === input) throw new Error('Lỗi khi giải mã hex');
                 } else {
                     result = (op === 'decode') ? decodeURIComponent(input) : encodeURIComponent(input);
                 }
-
                 document.getElementById('resultOutput').value = result;
             } catch (err) {
                 console.error(`Error [${type}]:`, err, 'Input:', input);
