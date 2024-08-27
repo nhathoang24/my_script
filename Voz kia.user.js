@@ -9,108 +9,84 @@
 document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
-    // Mảng lưu trữ các ID KIA
-    let kiaIds = [];
+    let observer = new IntersectionObserver(inoHandler);
 
-    // Đánh dấu các phần tử có ID là KIA
-    function markKIA(id) {
-        if (!kiaIds.includes(id)) {
-            kiaIds.push(id);
+    function applyKiaStyle(el) {
+        el.style.color = 'red';
+        el.style.textDecoration = "line-through";
+        console.log('Applied KIA style to', el);
+    }
+
+    function getUsernameById(id) {
+        let username = '';
+        if (document.location.pathname.startsWith('/t/')) {
+            username = document.querySelector(`.message-userDetails a.username[data-user-id='${id}']`)?.innerText;
+        } else if (document.location.pathname.startsWith('/u/')) {
+            username = document.querySelector(`.username.comment-user[data-user-id='${id}']`)?.innerText
+                || document.querySelector(`h4.attribution a.username[data-user-id='${id}']`)?.innerText
+                || document.querySelector(`.comment-contentWrapper a.username.comment-user[data-user-id='${id}']`)?.innerText;
         }
+        return username;
     }
 
-    // Áp dụng màu đỏ cho các phần tử có ID là KIA
-    function applyKIAStyles() {
-        kiaIds.forEach(id => {
-            let els = document.querySelectorAll(".message-userDetails a.username[data-user-id='" + id + "'], .username.comment-user[data-user-id='" + id + "']");
-            els.forEach(el => {
-                el.style.color = "red";
-                el.style.textDecoration = "line-through";
-            });
-        });
-    }
-
-    function findUser(id) {
+    function findUser(id, el) {
         let token = document.getElementsByName("_xfToken")[0]?.value;
         if (!token) {
             console.error('Token not found');
             return;
         }
-        let queryUrl = `https://voz.vn/index.php?members/find&q={username}&_xfRequestUri={requestUri}&_xfWithData=1&_xfToken=${token}&_xfResponseType=json`;
-        let username;
+        let username = getUsernameById(id);
+        if (!username) return;
 
-        if (document.location.pathname.startsWith('/t/')) {
-            username = document.querySelector(`.message-userDetails a.username[data-user-id='${id}']`)?.innerText;
-        } else if (document.location.pathname.startsWith('/u/')) {
-            username = document.querySelector(`.username.comment-user[data-user-id='${id}']`)?.innerText;
+        let queryUrl = `https://voz.vn/index.php?members/find&q=${encodeURIComponent(username)}&_xfRequestUri=${document.location.pathname}&_xfWithData=1&_xfToken=${token}&_xfResponseType=json`;
 
-            // Lấy thông tin người dùng từ phần tử div.comment-contentWrapper
-            const commentContentWrappers = document.querySelectorAll('div.comment-contentWrapper');
-            commentContentWrappers.forEach(wrapper => {
-                const userLink = wrapper.querySelector('a.username.comment-user');
-                if (userLink) {
-                    const userId = userLink.getAttribute('data-user-id');
-                    const username = userLink.innerText.trim();
-                    console.log('User ID:', userId);
-                    console.log('Username:', username);
+        let httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function () {
+            if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+                let isKIA = !JSON.parse(httpRequest.responseText).results.some(r => r.id === username);
+                if (isKIA) {
+                    applyKiaStyle(el);
                 }
-            });
+            }
+        };
 
-            // Lấy tất cả các phần tử h4 với lớp attribution
-            const attributionElements = document.querySelectorAll('h4.attribution');
-            attributionElements.forEach(attributionElement => {
-                const userLink = attributionElement.querySelector('a.username');
-                if (userLink) {
-                    const userId = userLink.getAttribute('data-user-id');
-                    const username = userLink.innerText.trim();
-                    console.log('User ID:', userId);
-                    console.log('Username:', username);
-                }
-            });
-        }
-
-        if (username) {
-            queryUrl = queryUrl.replace("{username}", encodeURIComponent(username))
-                .replace("{requestUri}", document.location.pathname);
-
-            let httpRequest = new XMLHttpRequest();
-            httpRequest.onreadystatechange = function() {
-                if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
-                    let isKIA = !JSON.parse(httpRequest.responseText).results.some(r => r.id === username);
-                    gotResult(id, isKIA);
-                }
-            };
-
-            httpRequest.open("GET", queryUrl);
-            httpRequest.send();
-        }
+        httpRequest.open("GET", queryUrl);
+        httpRequest.send();
     }
 
-    function gotResult(id, isKIA) {
-        if (isKIA) {
-            markKIA(id);
-            applyKIAStyles();
-        }
-    }
-
-    let handledIds = [];
     function inoHandler(entries, observer) {
         entries.forEach(entry => {
-            let id = entry.target.getAttribute("data-user-id");
-            if (handledIds.includes(id)) {
-                observer.unobserve(entry.target);
-            } else if (entry.isIntersecting) {
-                findUser(id);
-                handledIds.push(id);
+            if (entry.isIntersecting) {
+                let id = entry.target.getAttribute("data-user-id");
+                if (id) {
+                    findUser(id, entry.target);
+                }
             }
         });
     }
 
-    let observer = new IntersectionObserver(inoHandler);
+    function observeLoadMoreComments() {
+        const loadMoreButton = document.querySelector('.message-responseRow.u-jsOnly.js-commentLoader a');
+        if (loadMoreButton) {
+            loadMoreButton.addEventListener('click', () => {
+                setTimeout(() => {
+                    observeAllUsernames();
+                }, 1000);  // Chờ một chút để nội dung mới được tải
+            });
+        }
+    }
 
-    // Áp dụng màu đỏ cho các ID đã được đánh dấu khi trang được tải lại
-    applyKIAStyles();
+    function observeAllUsernames() {
+        let els = document.querySelectorAll(".message-userDetails a.username, .username.comment-user, h4.attribution a.username, .comment-contentWrapper a.username.comment-user");
+        els.forEach(el => observer.observe(el));
+    }
 
-    let els = document.querySelectorAll(".message-userDetails a.username, .username.comment-user");
-    els.forEach(el => observer.observe(el));
+    observeAllUsernames();
+    observeLoadMoreComments();
+
+    const mutationObserver = new MutationObserver(() => {
+        observeAllUsernames();
+    });
+
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
 });
