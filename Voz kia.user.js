@@ -6,87 +6,85 @@
 // @run-at       document-start
 // ==/UserScript==
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
-    let observer = new IntersectionObserver(inoHandler);
+    const observer = new IntersectionObserver(handleIntersection);
+    const mutationObserver = new MutationObserver(observeAllUsernames);
 
     function applyKiaStyle(el) {
         el.style.color = 'red';
         el.style.textDecoration = "line-through";
-        console.log('Applied KIA style to', el);
     }
 
     function getUsernameById(id) {
-        let username = '';
-        if (document.location.pathname.startsWith('/t/')) {
-            username = document.querySelector(`.message-userDetails a.username[data-user-id='${id}']`)?.innerText;
-        } else if (document.location.pathname.startsWith('/u/')) {
-            username = document.querySelector(`.username.comment-user[data-user-id='${id}']`)?.innerText
-                || document.querySelector(`h4.attribution a.username[data-user-id='${id}']`)?.innerText
-                || document.querySelector(`.comment-contentWrapper a.username.comment-user[data-user-id='${id}']`)?.innerText;
+        const selectors = [
+            `.message-userDetails a.username[data-user-id='${id}']`,
+            `.username.comment-user[data-user-id='${id}']`,
+            `h4.attribution a.username[data-user-id='${id}']`,
+            `.comment-contentWrapper a.username.comment-user[data-user-id='${id}']`,
+            `.memberTooltip-nameWrapper a.username[data-user-id='${id}']`
+        ];
+        for (const selector of selectors) {
+            const element = document.querySelector(selector);
+            if (element) return element.innerText;
         }
-        return username;
+        return '';
     }
 
     function findUser(id, el) {
-        let token = document.getElementsByName("_xfToken")[0]?.value;
+        const token = document.getElementsByName("_xfToken")[0]?.value;
         if (!token) {
             console.error('Token not found');
             return;
         }
-        let username = getUsernameById(id);
+
+        const username = getUsernameById(id);
         if (!username) return;
 
-        let queryUrl = `https://voz.vn/index.php?members/find&q=${encodeURIComponent(username)}&_xfRequestUri=${document.location.pathname}&_xfWithData=1&_xfToken=${token}&_xfResponseType=json`;
+        const queryUrl = `https://voz.vn/index.php?members/find&q=${encodeURIComponent(username)}&_xfRequestUri=${document.location.pathname}&_xfWithData=1&_xfToken=${token}&_xfResponseType=json`;
 
-        let httpRequest = new XMLHttpRequest();
-        httpRequest.onreadystatechange = function () {
-            if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
-                let isKIA = !JSON.parse(httpRequest.responseText).results.some(r => r.id === username);
-                if (isKIA) {
-                    applyKiaStyle(el);
-                }
-            }
-        };
-
-        httpRequest.open("GET", queryUrl);
-        httpRequest.send();
+        fetch(queryUrl)
+            .then(response => response.json())
+            .then(data => {
+                const isKIA = !data.results.some(r => r.id === username);
+                if (isKIA) applyKiaStyle(el);
+            })
+            .catch(console.error);
     }
 
-    function inoHandler(entries, observer) {
+    function handleIntersection(entries) {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                let id = entry.target.getAttribute("data-user-id");
-                if (id) {
-                    findUser(id, entry.target);
-                }
+                const id = entry.target.getAttribute("data-user-id");
+                if (id) findUser(id, entry.target);
             }
         });
+    }
+
+    function observeAllUsernames() {
+        const selectors = [
+            '.message-userDetails a.username',
+            '.username.comment-user',
+            'h4.attribution a.username',
+            '.comment-contentWrapper a.username.comment-user',
+            '.memberTooltip-nameWrapper a.username'
+        ];
+        const els = document.querySelectorAll(selectors.join(','));
+        els.forEach(el => observer.observe(el));
     }
 
     function observeLoadMoreComments() {
         const loadMoreButton = document.querySelector('.message-responseRow.u-jsOnly.js-commentLoader a');
         if (loadMoreButton) {
             loadMoreButton.addEventListener('click', () => {
-                setTimeout(() => {
-                    observeAllUsernames();
-                }, 1000);  // Chờ một chút để nội dung mới được tải
+                setTimeout(observeAllUsernames, 1000);
             });
         }
     }
 
-    function observeAllUsernames() {
-        let els = document.querySelectorAll(".message-userDetails a.username, .username.comment-user, h4.attribution a.username, .comment-contentWrapper a.username.comment-user");
-        els.forEach(el => observer.observe(el));
-    }
-
     observeAllUsernames();
     observeLoadMoreComments();
-
-    const mutationObserver = new MutationObserver(() => {
-        observeAllUsernames();
-    });
 
     mutationObserver.observe(document.body, { childList: true, subtree: true });
 });
