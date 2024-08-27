@@ -31,6 +31,7 @@
             --shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
             --transition: 0.3s ease;
         }
+
         .my-overlay-container {
             position: fixed;
             top: 0;
@@ -42,9 +43,10 @@
             justify-content: center;
             align-items: center;
             z-index: 99999;
-            max-height: vh;
+            max-height: 100vh;
             overflow: auto;
         }
+
         .my-overlay {
             background: var(--overlay-color);
             padding: 20px;
@@ -55,6 +57,7 @@
             box-shadow: var(--shadow);
             transition: var(--transition);
         }
+
         .my-overlay-title {
             display: flex;
             justify-content: space-between;
@@ -62,29 +65,35 @@
             margin-bottom: 20px;
             position: relative;
         }
+
         .my-overlay-title-text {
             font-size: 26px;
             font-weight: 600;
             color: var(--font-color);
         }
+
         .my-overlay-titleCloser {
             font-size: 30px;
             cursor: pointer;
             color: var(--close-color);
             transition: var(--transition);
         }
+
         .my-overlay-titleCloser:hover {
             color: var(--close-hover-color);
         }
+
         .my-overlay-content {
             display: flex;
             flex-direction: column;
         }
+
         .my-overlay-content label {
             margin-bottom: 8px;
             font-weight: 600;
             font-size: 16px;
         }
+
         .my-overlay-content select,
         .my-overlay-content textarea {
             width: 100%;
@@ -94,16 +103,19 @@
             border-radius: 5px;
             box-sizing: border-box;
         }
+
         .my-overlay-content textarea {
             height: 120px;
             font-size: 16px;
             line-height: 1.5;
             resize: vertical;
         }
+
         .my-button-container {
             display: flex;
             gap: 20px;
         }
+
         .my-button-container button {
             padding: 12px 20px;
             font-size: 14px;
@@ -153,7 +165,7 @@
         }
 
         .custom-popup-link {
-            position: fixed; /* Đảm bảo nút luôn nằm cố định trên màn hình */
+            position: fixed;
             width: 40px;
             height: 40px;
             background-image: url("https://data.voz.vn/styles/next/xenforo/smilies/popopo/sexy_girl.png?v=01");
@@ -183,66 +195,64 @@
         makeDraggable(toggleButton);
     };
     const makeDraggable = (element) => {
-    if (!element) return console.error('Phần tử không tồn tại.');
-
-    let offsetX, offsetY, startX, startY, isDragging = false;
-
-    const setPosition = (x, y) => {
-        element.style.left = `${x}px`;
-        element.style.top = `${y}px`;
-    };
-    const moveElement = (e) => {
-        if (!isDragging) {
-            // Kiểm tra nếu chuột đã di chuyển một khoảng cách đủ lớn để bắt đầu kéo
-            if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
-                isDragging = true;
+        if (!element) return console.error('Phần tử không tồn tại.');
+        let offsetX, offsetY, startX, startY, isDragging = false;
+        element.style.userSelect = 'none';
+        const setPosition = (x, y) => {
+            element.style.left = `${x}px`;
+            element.style.top = `${y}px`;
+        };
+        const moveElement = (e) => {
+            if (!isDragging) {
+                if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
+                    isDragging = true;
+                }
+                return;
             }
-            return;
-        }
-        const rect = element.getBoundingClientRect();
-        const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
-        let newLeft = e.clientX - offsetX;
-        let newTop = e.clientY - offsetY;
+            const rect = element.getBoundingClientRect();
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            let newLeft = e.clientX - offsetX;
+            let newTop = e.clientY - offsetY;
 
-        newLeft = Math.max(0, Math.min(newLeft, windowWidth - rect.width));
-        newTop = Math.max(0, Math.min(newTop, windowHeight - rect.height));
-        setPosition(newLeft, newTop);
-    };
-    const stopDragging = (e) => {
-        if (isDragging) {
-            localStorage.setItem('toggleButtonPosition', JSON.stringify({
-                top: element.style.top,
-                left: element.style.left
-            }));
-        } else if (e.button === 0 && typeof toggleOverlay === 'function') {
-            toggleOverlay();
+            newLeft = Math.max(0, Math.min(newLeft, windowWidth - rect.width));
+            newTop = Math.max(0, Math.min(newTop, windowHeight - rect.height));
+            setPosition(newLeft, newTop);
+        };
+        const stopDragging = (e) => {
+            if (isDragging) {
+                localStorage.setItem('toggleButtonPosition', JSON.stringify({
+                    top: element.style.top,
+                    left: element.style.left
+                }));
+            } else if (e.button === 0 && typeof toggleOverlay === 'function') {
+                toggleOverlay();
+            }
+            document.removeEventListener('mousemove', moveElement);
+            document.removeEventListener('mouseup', stopDragging);
+            document.removeEventListener('mouseleave', stopDragging);
+            isDragging = false;
+        };
+        const startDragging = (e) => {
+            if (e.button !== 0) return;
+            const rect = element.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            startX = e.clientX;
+            startY = e.clientY;
+            document.addEventListener('mousemove', moveElement);
+            document.addEventListener('mouseup', stopDragging);
+            document.addEventListener('mouseleave', stopDragging);
+        };
+        element.addEventListener('mousedown', startDragging);
+        const savedPosition = JSON.parse(localStorage.getItem('toggleButtonPosition'));
+        if (savedPosition) {
+            setPosition(
+                parseFloat(savedPosition.left) || 0,
+                parseFloat(savedPosition.top) || 0
+            );
         }
-        document.removeEventListener('mousemove', moveElement);
-        document.removeEventListener('mouseup', stopDragging);
-        document.removeEventListener('mouseleave', stopDragging);
-        isDragging = false;
     };
-    const startDragging = (e) => {
-        if (e.button !== 0) return;
-        const rect = element.getBoundingClientRect();
-        offsetX = e.clientX - rect.left;
-        offsetY = e.clientY - rect.top;
-        startX = e.clientX;
-        startY = e.clientY;
-        document.addEventListener('mousemove', moveElement);
-        document.addEventListener('mouseup', stopDragging);
-        document.addEventListener('mouseleave', stopDragging);
-    };
-    element.addEventListener('mousedown', startDragging);
-    const savedPosition = JSON.parse(localStorage.getItem('toggleButtonPosition'));
-    if (savedPosition) {
-        setPosition(
-            parseFloat(savedPosition.left) || 0,
-            parseFloat(savedPosition.top) || 0
-        );
-    }
-};
     window.addEventListener('load', () => {
         const toggleButton = document.querySelector('.toggleButtonClass');
         if (toggleButton) {
@@ -269,33 +279,33 @@
         const overlayContainer = document.createElement('div');
         overlayContainer.className = 'my-overlay-container';
         overlayContainer.innerHTML = `
-              <div class="my-overlay">
-                  <div class="my-overlay-title">
-                      <span class="my-overlay-title-text">Encode/Decode Input</span>
-                      <a class="my-overlay-titleCloser" role="button" aria-label="Close">×</a>
-                  </div>
-                  <div class="my-overlay-content">
-                      <label>Select Operation:</label>
-                      <select id="operationType">
-                          <option value="decode">Decode</option>
-                          <option value="encode">Encode</option>
-                      </select>
-                      <label>Select Type:</label>
-                      <select id="decodeType">
-                          <option value="hex">Hex</option>
-                          <option value="base64">Base64</option>
-                          <!--<option value="url">URL</option>-->
-                      </select>
-                      <textarea id="inputString" placeholder="Enter text..."></textarea>
-                      <textarea id="resultOutput" readonly placeholder="Result..."></textarea>
-                      <div class="my-button-container">
-                          <button id="actionButton">Decode/Encode</button>
-                          <button id="copyButton">Copy</button>
-                      </div>
-                  </div>
-              </div>
-          `;
+            <div class="my-overlay">
+                <div class="my-overlay-title">
+                    <span class="my-overlay-title-text">Encode/Decode Input</span>
+                    <a class="my-overlay-titleCloser" role="button" aria-label="Close">×</a>
+                </div>
+                <div class="my-overlay-content">
+                    <label>Select Operation:</label>
+                    <select id="operationType">
+                        <option value="decode">Decode</option>
+                        <option value="encode">Encode</option>
+                    </select>
+                    <label>Select Type:</label>
+                    <select id="decodeType">
+                        <option value="hex">Hex</option>
+                        <option value="base64">Base64</option>
+                    </select>
+                    <textarea id="inputString" placeholder="Enter text..."></textarea>
+                    <textarea id="resultOutput" readonly placeholder="Result..."></textarea>
+                    <div class="my-button-container">
+                        <button id="actionButton">Decode/Encode</button>
+                        <button id="copyButton">Copy</button>
+                    </div>
+                </div>
+            </div>
+        `;
         document.body.appendChild(overlayContainer);
+
         const closeButton = document.querySelector('.my-overlay-titleCloser');
         closeButton.addEventListener('click', () => {
             overlayContainer.style.display = 'none';
@@ -304,12 +314,13 @@
             document.getElementById('operationType').value = "decode";
             document.getElementById('decodeType').value = "hex";
         });
+
         const encodeHex = s => Array.from(s, c => c.charCodeAt(0).toString(16).padStart(2, '0')).join(' ').toUpperCase();
         const decodeHex = h => {
             try {
                 const cleanedHex = h.replace(/\s+/g, '');
-                if (!/^[a-fA-F0-9]+$/.test(cleanedHex)) throw new Error('Chuỗi hex không hợp lệ');
-                if (cleanedHex.length % 2 !== 0) throw new Error('Độ dài chuỗi hex không hợp lệ');
+                if (!/^[a-fA-F0-9]+$/.test(cleanedHex)) throw new Error('Invalid hex string');
+                if (cleanedHex.length % 2 !== 0) throw new Error('Invalid hex string length');
                 return cleanedHex.match(/../g).map(b => String.fromCharCode(parseInt(b, 16))).join('');
             } catch (err) {
                 throw new Error(err.message);
@@ -319,7 +330,7 @@
         const decodeBase64 = b => {
             try {
                 if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$/.test(b)) {
-                    throw new Error('Chuỗi base64 không hợp lệ');
+                    throw new Error('Invalid base64 string');
                 }
                 return atob(b);
             } catch (err) {
@@ -331,38 +342,42 @@
             const op = document.getElementById('operationType').value;
             const type = document.getElementById('decodeType').value;
             const input = document.getElementById('inputString').value.trim();
-            if (!input) return alert('Vui lòng nhập chuỗi.');
+            if (!input) return alert('Please enter a string.');
             try {
                 let result;
-                if (type === 'base64') {
-                    result = (op === 'decode') ? decodeBase64(input) : encodeBase64(input);
-                } else if (type === 'hex') {
-                    result = (op === 'decode') ? decodeHex(input) : encodeHex(input);
-                } else {
-                    result = (op === 'decode') ? decodeURIComponent(input) : encodeURIComponent(input);
+                switch (type) {
+                    case 'base64':
+                        result = (op === 'decode') ? decodeBase64(input) : encodeBase64(input);
+                        break;
+                    case 'hex':
+                        result = (op === 'decode') ? decodeHex(input) : encodeHex(input);
+                        break;
+                    default:
+                        result = (op === 'decode') ? decodeURIComponent(input) : encodeURIComponent(input);
                 }
                 document.getElementById('resultOutput').value = result;
             } catch (err) {
                 console.error(`Error [${type}]:`, err, 'Input:', input);
-                alert(`Lỗi: ${err.message}`);
+                alert(`Error: ${err.message}`);
             }
         });
+
         document.getElementById('copyButton').addEventListener('click', async () => {
             const resultOutput = document.getElementById('resultOutput');
             const textToCopy = resultOutput.value.trim();
             if (!textToCopy) {
-                alert('Không có gì để sao chép!');
+                alert('Nothing to copy!');
                 return;
             }
             try {
                 await navigator.clipboard.writeText(textToCopy);
-                alert('Đã sao chép vào clipboard!');
+                alert('Copied to clipboard!');
                 const copyButton = document.getElementById('copyButton');
                 copyButton.classList.add('flash');
                 setTimeout(() => copyButton.classList.remove('flash'), 1000);
             } catch (err) {
                 console.error('Error copying to clipboard:', err);
-                alert('Lỗi khi sao chép vào clipboard.');
+                alert('Error copying to clipboard.');
             }
         });
     }

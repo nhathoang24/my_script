@@ -1,6 +1,12 @@
 // ==UserScript==
-// @name         Voz kia
-// @match        https://voz.vn/*
+// @name         Voz KIA User Highlighter
+// @decription   Hiện các thành viên đã bị ban trên voz
+// @match        https://voz.vn/t/*
+// @match        https://voz.vn/whats-new/profile-posts/*
+// @match        https://voz.vn/u/*
+// @match        https://voz.vn/search/*
+// @author       itisme
+// @version      1.0
 // @icon         https://voz.vn/styles/next/xenforo/voz-logo-192.png?v=1
 // @grant        none
 // @run-at       document-start
@@ -10,7 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
     const observer = new IntersectionObserver(handleIntersection);
-    const mutationObserver = new MutationObserver(observeAllUsernames);
+    const mutationObserver = new MutationObserver(handleMutations);
+    const cache = new Map();
 
     function applyKiaStyle(el) {
         el.style.color = 'red';
@@ -20,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function getUsernameById(id) {
         const selectors = [
             `.message-userDetails a.username[data-user-id='${id}']`,
-            `.username.comment-user[data-user-id='${id}']`,
             `h4.attribution a.username[data-user-id='${id}']`,
             `.comment-contentWrapper a.username.comment-user[data-user-id='${id}']`,
             `.memberTooltip-nameWrapper a.username[data-user-id='${id}']`
@@ -33,6 +39,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function findUser(id, el) {
+        if (cache.has(id)) {
+            if (cache.get(id)) applyKiaStyle(el);
+            return;
+        }
+
         const token = document.getElementsByName("_xfToken")[0]?.value;
         if (!token) {
             console.error('Token not found');
@@ -48,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 const isKIA = !data.results.some(r => r.id === username);
+                cache.set(id, isKIA);
                 if (isKIA) applyKiaStyle(el);
             })
             .catch(console.error);
@@ -62,10 +74,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function handleMutations(mutationsList) {
+        mutationsList.forEach(mutation => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        const newUsernames = node.querySelectorAll(
+                            '.message-userDetails a.username, h4.attribution a.username, .comment-contentWrapper a.username.comment-user, .memberTooltip-nameWrapper a.username'
+                        );
+                        newUsernames.forEach(el => observer.observe(el));
+                    }
+                });
+            }
+        });
+    }
+
+    function observeLoadMoreButton() {
+        const loadMoreButton = document.querySelector('.message-responseRow.u-jsOnly.js-commentLoader a');
+        if (loadMoreButton) {
+            loadMoreButton.addEventListener('click', () => {
+                mutationObserver.observe(document.body, { childList: true, subtree: true });
+            });
+        }
+    }
+
     function observeAllUsernames() {
         const selectors = [
             '.message-userDetails a.username',
-            '.username.comment-user',
             'h4.attribution a.username',
             '.comment-contentWrapper a.username.comment-user',
             '.memberTooltip-nameWrapper a.username'
@@ -74,17 +109,15 @@ document.addEventListener('DOMContentLoaded', () => {
         els.forEach(el => observer.observe(el));
     }
 
-    function observeLoadMoreComments() {
-        const loadMoreButton = document.querySelector('.message-responseRow.u-jsOnly.js-commentLoader a');
-        if (loadMoreButton) {
-            loadMoreButton.addEventListener('click', () => {
-                setTimeout(observeAllUsernames, 1000);
-            });
-        }
-    }
-
     observeAllUsernames();
-    observeLoadMoreComments();
-
     mutationObserver.observe(document.body, { childList: true, subtree: true });
+    observeLoadMoreButton();
+
+    // Optional: Listen for AJAX complete events, if applicable
+    document.addEventListener('ajaxComplete', () => {
+        const newUsernames = document.querySelectorAll(
+            '.message-userDetails a.username, h4.attribution a.username, .comment-contentWrapper a.username.comment-user, .memberTooltip-nameWrapper a.username'
+        );
+        newUsernames.forEach(el => observer.observe(el));
+    });
 });
