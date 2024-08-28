@@ -1,79 +1,114 @@
 // ==UserScript==
-// @name         Decode Hex strings on Voz
-// @namespace    Decode Hex strings on Voz
-// @version      4.1
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=voz.vn
-// @description  Decode Hex, Base64
+// @name         Voz KIA User Highlighter
+// @description  Hiện các thành viên đã bị ban trên voz
 // @match        https://voz.vn/t/*
-// @run-at       document-idle
-// @license      GPL-3.0
+// @match        https://voz.vn/whats-new/profile-posts/*
+// @match        https://voz.vn/u/*
+// @match        https://voz.vn/search/*
+// @match        https://voz.vn/conversations/*
+// @author       itisme
+// @version      1.0
+// @icon         https://voz.vn/styles/next/xenforo/voz-logo-192.png?v=1
+// @grant        none
+// @run-at       document-start
 // ==/UserScript==
 
-(function() {
+document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
-    function decodeHex(hexString) {
-        hexString = hexString.replace(/\s+/g, '');
-        if (!/^[0-9A-Fa-f]{2,}$/.test(hexString)) return hexString;
+    const observer = new IntersectionObserver(handleIntersection);
+    const mutationObserver = new MutationObserver(handleMutations);
+    const cache = new Map();
 
-        try {
-            let hexStr = '';
-            for (let i = 0; i < hexString.length; i += 2) {
-                hexStr += String.fromCharCode(parseInt(hexString.slice(i, i + 2), 16));
-            }
-            return (/^[\x20-\x7E]*$/.test(hexStr) && hexStr.length > 3) ? hexStr : hexString;
-        } catch {
-            return hexString;
-        }
+    const selectors = [
+        '.message-userDetails a.username',
+        'h4.attribution a.username',
+        '.comment-contentWrapper a.username.comment-user',
+        '.memberTooltip-nameWrapper a.username'
+    ];
+
+    const token = document.getElementsByName("_xfToken")[0]?.value;
+    if (!token) {
+        console.error('Token not found');
+        return;
     }
 
-    function decodeBase64(base64String) {
-        if (!/^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/.test(base64String)) return base64String;
-
-        try {
-            let binaryString = atob(base64String);
-            return (/^[\x20-\x7E]*$/.test(binaryString) && binaryString.length > 3) ? binaryString : base64String;
-        } catch {
-            return base64String;
-        }
+    function applyKiaStyle(el) {
+        el.style.color = 'red';
+        el.style.textDecoration = "line-through";
     }
 
-    function decodeContent(elements, regex, decodeFunc) {
-        const excludedSelectors = [
-            '.fr-box.bbWrapper.fr-ltr.fr-basic.fr-top',
-            '.tooltip.tooltip--basic',
-            '.bbImage',
-            '.bbMediaJustifier',
-            '.link'
-        ];
+    function getUsernameById(id) {
+        for (const selector of selectors) {
+            const element = document.querySelector(`${selector}[data-user-id='${id}']`);
+            if (element && !element.closest('.autoCompleteList')) return element.innerText;
+        }
+        return '';
+    }
 
-        elements.forEach(element => {
-            if (excludedSelectors.some(selector => element.closest(selector))) return;
+    function findUser(id, el) {
+        if (cache.has(id)) {
+            if (cache.get(id)) applyKiaStyle(el);
+            return;
+        }
 
-            const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
-            let textNode;
-            while (textNode = walker.nextNode()) {
-                let content = textNode.nodeValue;
-                const matches = content.match(regex);
-                if (matches) {
-                    matches.forEach(match => {
-                        content = content.replace(new RegExp(escapeRegExp(match), 'g'), decodeFunc(match));
-                    });
-                    textNode.nodeValue = content;
-                }
+        const username = getUsernameById(id);
+        if (!username) return;
+
+        const queryUrl = `https://voz.vn/index.php?members/find&q=${encodeURIComponent(username)}&_xfRequestUri=${document.location.pathname}&_xfWithData=1&_xfToken=${token}&_xfResponseType=json`;
+
+        fetch(queryUrl)
+            .then(response => response.json())
+            .then(data => {
+                const isKIA = !data.results.some(r => r.id === username);
+                cache.set(id, isKIA);
+                if (isKIA) applyKiaStyle(el);
+            })
+            .catch(console.error);
+    }
+
+    function handleIntersection(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.getAttribute("data-user-id");
+                if (id) findUser(id, entry.target);
             }
         });
     }
 
-    function escapeRegExp(string) {
-        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    function handleMutations(mutationsList) {
+        mutationsList.forEach(mutation => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        const newUsernames = node.querySelectorAll(selectors.join(','));
+                        newUsernames.forEach(el => observer.observe(el));
+                    }
+                });
+            }
+        });
     }
 
-    function main() {
-        const elements = document.querySelectorAll('.bbWrapper');
-        decodeContent(elements, /\b([0-9A-Fa-f]{2}\s*){4,}\b/g, decodeHex);
-        decodeContent(elements, /(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{4})/g, decodeBase64);
+    function observeLoadMoreButton() {
+        const loadMoreButton = document.querySelector('.message-responseRow.u-jsOnly.js-commentLoader a');
+        if (loadMoreButton) {
+            loadMoreButton.addEventListener('click', () => {
+                mutationObserver.observe(document.body, { childList: true, subtree: true });
+            });
+        }
     }
 
-    main();
-})();
+    function observeAllUsernames() {
+        const els = document.querySelectorAll(selectors.join(','));
+        els.forEach(el => observer.observe(el));
+    }
+
+    observeAllUsernames();
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+    observeLoadMoreButton();
+
+    document.addEventListener('ajaxComplete', () => {
+        const newUsernames = document.querySelectorAll(selectors.join(','));
+        newUsernames.forEach(el => observer.observe(el));
+    });
+});
