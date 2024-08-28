@@ -2,12 +2,11 @@
 // @name         Download protected PDF file from Google Drive
 // @namespace    Download protected PDF file
 // @description  You can download protected PDF file
-// @version      1.99
+// @version      1.1
 // @match        https://drive.google.com/*
 // @grant        GM_registerMenuCommand
 // @require      https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js
 // ==/UserScript==
-
 (function() {
     'use strict';
 
