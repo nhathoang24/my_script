@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Reject serviceWorker Auto
+// @name        Reject Service Worker Auto
 // @namespace   rejectserviceWorkerAuto
 // @match       *://*/*
 // @run-at      document-start
@@ -7,81 +7,66 @@
 // @grant       GM_setValue
 // @grant       GM_registerMenuCommand
 // @version     1.4
-// @author      -
 // @description 10/4/2023, 5:07:06 PM
-// @downloadURL https://update.greasyfork.org/scripts/482724/Reject%20serviceWorker%20Auto.user.js
-// @updateURL https://update.greasyfork.org/scripts/482724/Reject%20serviceWorker%20Auto.meta.js
 // ==/UserScript==
 
-var defaultvalue = 'none';
-var name = 'rejectserviceWorkerAuto';
-var prefix = "autoinject" + name;
-var value = GM_getValue("value" + name + document.domain, defaultvalue);
-console.log(value);
-var injectedStatus = false;
-var hostarray = [];
+(() => {
+    const defaultvalue = 'none';
+    const name = 'rejectserviceWorkerAuto';
+    const prefix = "autoinject" + name;
+    const valueKey = `value${name}${document.domain}`;
+    let hostarray = JSON.parse(GM_getValue(prefix, "[]")) || [];
+    let injectedStatus = false;
 
-function inject() {
-    //if (window.self !== window.top) return; // Not in frames
-    if (injectedStatus !== false) return; // Not if already injected
-//if (navigator.serviceWorker) {
-navigator.serviceWorker.register = () => new Promise((res, rej) => rej("This method is not allowed!"));
-window.ServiceWorkerContainer.prototype.register = () => new Promise((res, rej) => rej("This method is not allowed! 2"));
+    function inject() {
+        if (injectedStatus) return;
 
-//}
-    injectedStatus = true;
-}
+        if (navigator.serviceWorker) {
+            navigator.serviceWorker.register = () => new Promise((_, rej) => rej("This method is not allowed!"));
+            window.ServiceWorkerContainer.prototype.register = () => new Promise((_, rej) => rej("This method is not allowed! 2"));
+        }
 
-function addHost() {
-    hostarray.push(location.hostname);
-    GM_setValue(prefix, JSON.stringify(hostarray));
-    if (injectedStatus == false) inject;
-}
-
-function set() {
-    var val = window.prompt("Enter " + name + document.domain + " value", defaultvalue);
-    val = parseInt(val);
-    if (val == undefined) {
-        return false;
+        injectedStatus = true;
     }
-    GM_setValue("value" + name + document.domain, val);
-}
 
-function plus() {
-    var value = GM_getValue("value" + name + document.domain, defaultvalue);
-    GM_setValue("value" + name + document.domain, value + 1);
-}
-
-function minus() {
-    var value = GM_getValue("value" + name + document.domain, defaultvalue);
-    GM_setValue("value" + name + document.domain, value - 1);
-}
-
-function removeHost() {
-    var index = hostarray.indexOf(location.hostname);
-    if (index > -1) {
-        hostarray.splice(index, 1);
+    function manageHost(add = true) {
+        const index = hostarray.indexOf(location.hostname);
+        if (add && index === -1) {
+            hostarray.push(location.hostname);
+        } else if (!add && index > -1) {
+            hostarray.splice(index, 1);
+        }
         GM_setValue(prefix, JSON.stringify(hostarray));
     }
-}
-// This should work in Violentmonkey and Tampermonkey, but unfortunately not Greasemonkey.
-try {
-    hostarray = JSON.parse(GM_getValue(prefix, "[]"));
-    //console.log(hostarray);
-    if (typeof (value) == 'number') {
-        GM_registerMenuCommand("+", plus);
-        GM_registerMenuCommand("-", minus);
+
+    function set() {
+        const val = parseInt(window.prompt(`Enter ${name} ${document.domain} value`, defaultvalue), 10);
+        if (!isNaN(val)) {
+            GM_setValue(valueKey, val);
+        }
     }
-    //GM_registerMenuCommand("Set " + name, set);
-    if (hostarray.includes(location.hostname)) {
-        GM_registerMenuCommand("Inject " + name, inject);
-        GM_registerMenuCommand("Auto-Inject on " + location.hostname, removeHost);
-    } else {
-        inject();
-        injectedStatus = true;
-        GM_registerMenuCommand("Stop Auto-Injecting " + name, addHost);
+
+    function adjustValue(delta) {
+        let value = parseInt(GM_getValue(valueKey, defaultvalue), 10);
+        if (!isNaN(value)) {
+            GM_setValue(valueKey, value + delta);
+        }
     }
-} catch (err) {
-    console.log("Error adding Inject menu items: " + name);
-    console.log(err);
-}
+
+    try {
+        if (typeof GM_getValue(valueKey) === 'number') {
+            GM_registerMenuCommand("+", () => adjustValue(1));
+            GM_registerMenuCommand("-", () => adjustValue(-1));
+        }
+
+        if (hostarray.includes(location.hostname)) {
+            GM_registerMenuCommand(`Inject ${name}`, inject);
+            GM_registerMenuCommand(`Auto-Inject on ${location.hostname}`, () => manageHost(false));
+        } else {
+            inject();
+            GM_registerMenuCommand(`Stop Auto-Injecting ${name}`, () => manageHost(true));
+        }
+    } catch (err) {
+        console.error(`Error adding Inject menu items: ${name}`, err);
+    }
+})();
