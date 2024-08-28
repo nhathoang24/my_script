@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Voz KIA User Highlighter
-// @decription   Hiện các thành viên đã bị ban trên voz
+// @description  Hiện các thành viên đã bị ban trên voz
 // @match        https://voz.vn/t/*
 // @match        https://voz.vn/whats-new/profile-posts/*
 // @match        https://voz.vn/u/*
@@ -19,20 +19,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const mutationObserver = new MutationObserver(handleMutations);
     const cache = new Map();
 
+    const selectors = [
+        '.message-userDetails a.username',
+        'h4.attribution a.username',
+        '.comment-contentWrapper a.username.comment-user',
+        '.memberTooltip-nameWrapper a.username'
+    ];
+
+    const token = document.getElementsByName("_xfToken")[0]?.value;
+    if (!token) {
+        console.error('Token not found');
+        return;
+    }
+
     function applyKiaStyle(el) {
         el.style.color = 'red';
         el.style.textDecoration = "line-through";
     }
 
     function getUsernameById(id) {
-        const selectors = [
-            `.message-userDetails a.username[data-user-id='${id}']`,
-            `h4.attribution a.username[data-user-id='${id}']`,
-            `.comment-contentWrapper a.username.comment-user[data-user-id='${id}']`,
-            `.memberTooltip-nameWrapper a.username[data-user-id='${id}']`
-        ];
         for (const selector of selectors) {
-            const element = document.querySelector(selector);
+            const element = document.querySelector(`${selector}[data-user-id='${id}']`);
             if (element) return element.innerText;
         }
         return '';
@@ -41,12 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function findUser(id, el) {
         if (cache.has(id)) {
             if (cache.get(id)) applyKiaStyle(el);
-            return;
-        }
-
-        const token = document.getElementsByName("_xfToken")[0]?.value;
-        if (!token) {
-            console.error('Token not found');
             return;
         }
 
@@ -79,9 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (mutation.type === 'childList') {
                 mutation.addedNodes.forEach(node => {
                     if (node.nodeType === Node.ELEMENT_NODE) {
-                        const newUsernames = node.querySelectorAll(
-                            '.message-userDetails a.username, h4.attribution a.username, .comment-contentWrapper a.username.comment-user, .memberTooltip-nameWrapper a.username'
-                        );
+                        const newUsernames = node.querySelectorAll(selectors.join(','));
                         newUsernames.forEach(el => observer.observe(el));
                     }
                 });
@@ -99,12 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function observeAllUsernames() {
-        const selectors = [
-            '.message-userDetails a.username',
-            'h4.attribution a.username',
-            '.comment-contentWrapper a.username.comment-user',
-            '.memberTooltip-nameWrapper a.username'
-        ];
         const els = document.querySelectorAll(selectors.join(','));
         els.forEach(el => observer.observe(el));
     }
@@ -113,11 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
     mutationObserver.observe(document.body, { childList: true, subtree: true });
     observeLoadMoreButton();
 
-    // Optional: Listen for AJAX complete events, if applicable
     document.addEventListener('ajaxComplete', () => {
-        const newUsernames = document.querySelectorAll(
-            '.message-userDetails a.username, h4.attribution a.username, .comment-contentWrapper a.username.comment-user, .memberTooltip-nameWrapper a.username'
-        );
+        const newUsernames = document.querySelectorAll(selectors.join(','));
         newUsernames.forEach(el => observer.observe(el));
     });
 });
