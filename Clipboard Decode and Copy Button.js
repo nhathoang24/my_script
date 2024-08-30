@@ -55,7 +55,6 @@
         button.style.right = savedPosition.right;
         button.style.bottom = savedPosition.bottom;
     } else {
-        // Vị trí mặc định nếu không có vị trí lưu trữ
         button.style.right = '0px';
         button.style.bottom = '0px';
     }
@@ -64,21 +63,25 @@
         initialX = e.clientX;
         initialY = e.clientY;
         isDragging = false;
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
     });
 
-    button.addEventListener("mousemove", function(e) {
+    function handleMouseMove(e) {
         if (!isDragging) {
             if (Math.abs(initialX - e.clientX) > 3 || Math.abs(initialY - e.clientY) > 3) {
                 isDragging = true;
             }
         }
-    });
+    }
 
-    button.addEventListener("mouseup", function(e) {
-        if (!isDragging) {
+    function handleMouseUp(e) {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        if (!isDragging && e.target === button) {
             readClipboard();
         }
-    });
+    }
 
     function readClipboard() {
         navigator.clipboard.readText()
@@ -120,10 +123,9 @@
                 notification.close();
             };
         } else if (Notification.permission === 'default') {
-            // Yêu cầu quyền thông báo từ người dùng nếu chưa được cấp
             Notification.requestPermission().then(permission => {
                 if (permission === 'granted') {
-                    showNotification(message); // Gọi lại hàm nếu quyền được cấp
+                    showNotification(message);
                 } else {
                     alert(message);
                 }
@@ -135,9 +137,9 @@
 
     function decodeBase64(str) {
         try {
-            if (typeof str !== 'string') throw new Error('Đầu vào không phải là chuỗi.');
             const decodedStr = atob(str.replace(/\s/g, ''));
-            return /^[ -~]*$/.test(decodedStr) ? decodedStr : 'Lỗi khi giải mã Base64: Chuỗi giải mã chứa ký tự không hợp lệ.';
+            if (/^[ -~]*$/.test(decodedStr)) return decodedStr;
+            throw new Error('Chuỗi giải mã chứa ký tự không hợp lệ.');
         } catch (err) {
             return "Lỗi khi giải mã Base64: " + err.message;
         }
@@ -147,11 +149,7 @@
         try {
             const hex = str.replace(/\s+/g, '');
             if (hex.length % 2 !== 0) throw new Error('Độ dài chuỗi Hex không hợp lệ.');
-            let result = '';
-            for (let i = 0; i < hex.length; i += 2) {
-                result += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-            }
-            return result;
+            return hex.match(/.{2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join('');
         } catch (err) {
             return "Lỗi khi giải mã Hex: " + err.message;
         }
@@ -185,8 +183,6 @@
         function closeDragElement() {
             document.onmouseup = null;
             document.onmousemove = null;
-
-            // Save position
             GM_setValue('buttonPosition', {
                 bottom: elmnt.style.bottom,
                 right: elmnt.style.right
