@@ -9,7 +9,7 @@
 (function () {
     'use strict';
 
-    const AGE_THRESHOLD_MS = 30 * 24 * 60 * 60 * 1000;
+    const AGE_THRESHOLD_MS = 14 * 24 * 60 * 60 * 1000;
     const MAX_CONCURRENT = 5;
 
     let activeRequests = 0;
