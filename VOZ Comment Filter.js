@@ -21,7 +21,6 @@
         'nga vàng',
         'tàu nô',
         'bodo',
-        'orc',
         'orc vàng',
         'orcvang',
     ];
