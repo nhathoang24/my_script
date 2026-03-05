@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VOZ - Ẩn comment tài khoản mới
 // @namespace    http://tampermonkey.net/
-// @version      3.7
+// @version      3.8
 // @description  Ẩn comment của user có tài khoản dưới 1 tháng tuổi, có nút Show để xem lại
 // @match        https://voz.vn/t/*
 // @icon         https://voz.vn/styles/next/xenforo/voz-logo-192.png?v=1
@@ -9,7 +9,7 @@
 (function () {
     'use strict';
 
-    const AGE_THRESHOLD_MS = 14 * 24 * 60 * 60 * 1000;
+    const AGE_THRESHOLD_MS = 13 * 24 * 60 * 60 * 1000;
     const MAX_CONCURRENT = 5;
 
     let activeRequests = 0;
@@ -71,6 +71,24 @@
             }
             .voz-show-btn:hover { background: #4a7abf; color: #fff; border-color: #4a7abf; }
             .voz-show-btn:active { background: #3a6aaf; border-color: #3a6aaf; }
+            .voz-quote-hidden {
+                display: none !important;
+            }
+            .voz-quote-bar {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 10px;
+                font-size: 11.5px;
+                font-family: system-ui, sans-serif;
+                color: #9a8060;
+                background: #f9f5ee;
+                border: 1px solid #e0d5c0;
+                border-radius: 4px;
+                margin: 4px 0;
+                cursor: default;
+            }
+            .voz-quote-bar .voz-show-btn { margin-left: auto; }
         `;
         document.head.appendChild(style);
     }
@@ -80,6 +98,46 @@
                       || messageEl.querySelector(`[data-user-id="${userId}"]`);
         return authorEl?.textContent?.trim() || `#${userId}`;
     }
+
+    // ── NEW: collapse quoted blocks that belong to a hidden user ──────────────
+    function collapseQuotesForUser(userId, username, joinedTs) {
+        const days = getDaysJoined(joinedTs);
+        const daysLabel = days === null ? '?' : days === 0 ? 'Hôm nay' : `${days} ngày`;
+
+        // XenForo stores the quoted member id in data-attributes as "member: <id>"
+        document.querySelectorAll(`.bbCodeBlock--quote[data-attributes*="member: ${userId}"]`).forEach(quoteEl => {
+            if (quoteEl.dataset.vozQuoteHidden) return; // already processed
+
+            quoteEl.dataset.vozQuoteHidden = '1';
+            quoteEl.classList.add('voz-quote-hidden');
+
+            const bar = document.createElement('div');
+            bar.className = 'voz-quote-bar';
+            bar.innerHTML = `
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#c8a876" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:0.8">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span>Quote từ tài khoản mới</span>
+                <span class="voz-dot">·</span>
+                <span class="voz-username" style="color:#7a6040;font-weight:600">${username}</span>
+                <span class="voz-dot">·</span>
+                <span class="voz-days" style="color:#b07840;font-size:11px;font-weight:500;background:#ecdfc8;padding:1px 6px;border-radius:3px">🕐 ${daysLabel}</span>
+                <button class="voz-show-btn">👁 Show</button>
+            `;
+
+            bar.querySelector('.voz-show-btn').addEventListener('click', () => {
+                bar.remove();
+                quoteEl.classList.remove('voz-quote-hidden');
+                delete quoteEl.dataset.vozQuoteHidden;
+            });
+
+            quoteEl.parentNode.insertBefore(bar, quoteEl);
+        });
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     function collapsePost(messageEl, userId, joinedTs) {
         if (messageEl.querySelector('.voz-notice-bar')) return;
@@ -129,10 +187,18 @@
     }
 
     function hidePostsByUserId(userId, joinedTs) {
+        const username = (() => {
+            const el = document.querySelector(`[data-user-id="${userId}"]`);
+            return el?.textContent?.trim() || `#${userId}`;
+        })();
+
         document.querySelectorAll(`.message [data-user-id="${userId}"]`).forEach(el => {
             const messageEl = el.closest('.message');
             if (messageEl) collapsePost(messageEl, userId, joinedTs);
         });
+
+        // Also collapse any quotes of this user inside other people's posts
+        collapseQuotesForUser(userId, username, joinedTs);
     }
 
     function processNext() {
@@ -196,5 +262,5 @@
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
-    console.log('[VOZ Filter v3.7] Đã khởi động');
+    console.log('[VOZ Filter v3.8] Đã khởi động');
 })();
