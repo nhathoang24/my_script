@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VOZ Comment Filter
 // @namespace    https://voz.vn/
-// @version      3.0
+// @version      3.1
 // @description  Ẩn comment chứa từ khóa, hiện nút Show để xem lại
 // @author       You
 // @match        https://voz.vn/t/*
@@ -23,6 +23,7 @@
         'bodo',
         'orc vàng',
         'orcvang',
+        'vằn vện'
     ];
     // ──────────────────────────────────────────────────────────────────
 
