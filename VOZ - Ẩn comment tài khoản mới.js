@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VOZ - Ẩn comment tài khoản mới
 // @namespace    http://tampermonkey.net/
-// @version      3.8
+// @version      3.9
 // @description  Ẩn comment của user có tài khoản dưới 1 tháng tuổi, có nút Show để xem lại
 // @match        https://voz.vn/t/*
 // @icon         https://voz.vn/styles/next/xenforo/voz-logo-192.png?v=1
@@ -104,9 +104,11 @@
         const days = getDaysJoined(joinedTs);
         const daysLabel = days === null ? '?' : days === 0 ? 'Hôm nay' : `${days} ngày`;
 
-        // XenForo stores the quoted member id in data-attributes as "member: <id>"
         document.querySelectorAll(`.bbCodeBlock--quote[data-attributes*="member: ${userId}"]`).forEach(quoteEl => {
-            if (quoteEl.dataset.vozQuoteHidden) return; // already processed
+            if (quoteEl.dataset.vozQuoteHidden) return;
+
+            // Lấy username từ data-quote thay vì dùng tham số username
+            const quotedUsername = quoteEl.dataset.quote || username;
 
             quoteEl.dataset.vozQuoteHidden = '1';
             quoteEl.classList.add('voz-quote-hidden');
@@ -122,7 +124,7 @@
                 </svg>
                 <span>Quote từ tài khoản mới</span>
                 <span class="voz-dot">·</span>
-                <span class="voz-username" style="color:#7a6040;font-weight:600">${username}</span>
+               <span class="voz-username" style="color:#7a6040;font-weight:600">${quotedUsername}</span>
                 <span class="voz-dot">·</span>
                 <span class="voz-days" style="color:#b07840;font-size:11px;font-weight:500;background:#ecdfc8;padding:1px 6px;border-radius:3px">🕐 ${daysLabel}</span>
                 <button class="voz-show-btn">👁 Show</button>
