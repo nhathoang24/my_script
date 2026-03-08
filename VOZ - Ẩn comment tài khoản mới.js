@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VOZ - Ẩn comment tài khoản mới
 // @namespace    http://tampermonkey.net/
-// @version      3.9
+// @version      4.0
 // @description  Ẩn comment của user có tài khoản dưới 1 tháng tuổi, có nút Show để xem lại
 // @match        https://voz.vn/t/*
 // @icon         https://voz.vn/styles/next/xenforo/voz-logo-192.png?v=1
@@ -253,6 +253,21 @@
             }
         });
     }
+
+    // Chỉ chạy nếu thread thuộc f/diem-bao.33
+    const forumId = document.querySelector('html')?.dataset?.contentForumId
+                  || document.querySelector('[data-forum-id]')?.dataset?.forumId;
+
+    // fallback: kiểm tra breadcrumb
+    const breadcrumb = document.querySelector('.p-breadcrumbs');
+    const isInF33 = forumId === '33'
+        || (breadcrumb && breadcrumb.textContent.includes('Điểm báo'));
+
+    if (!isInF33) {
+      console.log('not f33');
+      return;
+    }
+
 
     injectStyle();
     scanPosts();
