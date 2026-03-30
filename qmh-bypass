@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         QMH Bypass v4.3
+// @name         QMH Bypass v5.0
 // @namespace    qmh-bypass
-// @version      4.3
+// @version      5.0
 // @match        *://*.qmh.*/*
 // @match        *://video.qmh.*/*
 // @run-at       document-start
@@ -11,74 +11,133 @@
 (function () {
     'use strict';
 
-    const HOME = location.href;
+    const HOME        = location.href;
+    const HOME_ORIGIN = location.origin;
 
-    // ── Compile regex một lần thay vì loop Array.some mỗi lần kiểm tra ──
-    const BAD_RE = /cruncherpatiencestoreroom\.com|astronautlividlyreformer\.com|simpleblocker/i;
-    const isBad = url => url && BAD_RE.test(url);
+    // ── Phát hiện redirect ra ngoài domain ──────────────────────────
+    const isExternal = url => {
+        if (!url) return false;
+        try { return new URL(url, location.href).origin !== HOME_ORIGIN; }
+        catch { return false; }
+    };
 
-    // ── 1. Override location.assign / replace ────────────────────────
+    // ── Theo dõi user gesture ────────────────────────────────────────
+    let byUser = false;
+    document.addEventListener('mousedown', () => { byUser = true; }, true);
+    document.addEventListener('keydown',   () => { byUser = true; }, true);
+
+    const consumeGesture = () => { const v = byUser; byUser = false; return v; };
+
+    // ── 1. location.assign / replace ────────────────────────────────
     const origAssign  = location.assign.bind(location);
     const origReplace = location.replace.bind(location);
     try {
-        window.location.assign  = url => { if (!isBad(url)) origAssign(url); };
-        window.location.replace = url => { if (!isBad(url)) origReplace(url); };
+        window.location.assign  = url => {
+            if (!consumeGesture() && isExternal(url)) return;
+            origAssign(url);
+        };
+        window.location.replace = url => {
+            if (!consumeGesture() && isExternal(url)) return;
+            origReplace(url);
+        };
     } catch(e) {}
 
-    // ── 2. Chặn window.open ──────────────────────────────────────────
+    // ── 2. window.open ───────────────────────────────────────────────
     const origOpen = window.open.bind(window);
-    window.open = (url, ...args) => {
-        if (isBad(url)) { console.log('🚫 window.open blocked:', url); return null; }
+    const safeOpen = (url, ...args) => {
+        if (!consumeGesture() && isExternal(url)) {
+            console.log('🚫 Auto window.open blocked:', url);
+            return null;
+        }
         return origOpen(url, ...args);
     };
+    Object.defineProperty(window, 'open', {
+        get: () => safeOpen,
+        set: () => {},
+        configurable: false
+    });
 
-    // ── 3. Chặn <a> click ───────────────────────────────────────────
-    document.addEventListener('click', e => {
-        const a = e.target.closest('a[href]');
-        if (a && isBad(a.href)) { e.preventDefault(); e.stopImmediatePropagation(); }
-    }, true);
-
-    // ── 4. Chặn history API ──────────────────────────────────────────
+    // ── 3. history API ───────────────────────────────────────────────
     const _pushState = history.pushState.bind(history);
     const _replState = history.replaceState.bind(history);
-    history.pushState    = (s, t, url) => isBad(url) ? undefined : _pushState(s, t, url);
-    history.replaceState = (s, t, url) => isBad(url) ? undefined : _replState(s, t, url);
+    history.pushState    = (s, t, url) => isExternal(url) ? undefined : _pushState(s, t, url);
+    history.replaceState = (s, t, url) => isExternal(url) ? undefined : _replState(s, t, url);
 
-    // ── 5. Poll phát hiện redirect — dùng origReplace để tránh vòng lặp override ──
-    setInterval(() => {
-        if (isBad(location.href)) {
-            _replState(null, '', HOME); // reset URL trước
-            origReplace(HOME);          // rồi mới navigate
+    // ── 4. Poll cho location.href = ──────────────────────────────────
+    const pollBad = () => {
+        if (isExternal(location.href)) {
+            _replState(null, '', HOME);
+            origReplace(HOME);
         }
-    }, 200); // 200ms là đủ, 50ms tốn CPU không cần thiết
+        requestIdleCallback(pollBad, { timeout: 500 });
+    };
+    requestIdleCallback(pollBad, { timeout: 500 });
 
-    // ── 6. Giả mạo adblock = không có ───────────────────────────────
+    // ── 5. Giả mạo adblock ──────────────────────────────────────────
     window.adblockDetected = false;
     Object.defineProperty(window, 'adblockDetected', { get: () => false, set: () => {} });
     window.ninzoq = () => {};
-    window.SimpleBlocker = { isBlocked: async () => false, check: async cb => { cb?.(false); return false; } };
+    window.SimpleBlocker = {
+        isBlocked: async () => false,
+        check: async cb => { cb?.(false); return false; }
+    };
 
-    // ── 7. MutationObserver duy nhất — gộp chặn script + xóa overlay ──
+    // ── 6. Hook iframe ───────────────────────────────────────────────
+    const hookIframe = node => {
+        node.addEventListener('load', () => {
+            try {
+                const w = node.contentWindow;
+                if (w) Object.defineProperty(w, 'open', {
+                    get: () => safeOpen,
+                    set: () => {},
+                    configurable: false
+                });
+            } catch(e) {}
+        });
+    };
+
+    // ── 7. Observer head — script/meta ───────────────────────────────
     new MutationObserver(muts => {
         for (const m of muts) {
             for (const node of m.addedNodes) {
-                if (node.nodeType !== 1) continue; // chỉ xử lý Element
-                // Chặn script xấu
-                if (node.nodeName === 'SCRIPT' && isBad(node.src)) {
-                    node.remove();
-                    console.log('🗑️ Script blocked:', node.src);
-                    continue;
+                if (node.nodeType !== 1) continue;
+                // Script inject từ domain lạ
+                if (node.nodeName === 'SCRIPT' && isExternal(node.src)) {
+                    node.remove(); continue;
                 }
-                // Xóa overlay adblock
+                // Meta refresh ra ngoài
+                if (node.nodeName === 'META' &&
+                    node.httpEquiv?.toLowerCase() === 'refresh' &&
+                    isExternal(node.content?.match(/url=(.+)/i)?.[1])) {
+                    node.remove();
+                }
+            }
+        }
+    }).observe(document.documentElement, { childList: true });
+
+    // ── 8. Observer body — iframe + overlay ──────────────────────────
+    const bodyObserver = new MutationObserver(muts => {
+        for (const m of muts) {
+            for (const node of m.addedNodes) {
+                if (node.nodeType !== 1) continue;
+                if (node.nodeName === 'IFRAME') { hookIframe(node); continue; }
                 if (node.classList?.contains('adblocker-page-overlay') ||
                     node.classList?.contains('adblocker-page-backdrop')) {
                     node.remove();
                 }
             }
         }
-    }).observe(document.documentElement, { childList: true, subtree: true });
+    });
 
-    // ── 8. CSS ẩn overlay (phòng trường hợp load trước observer) ────
+    if (document.body) {
+        bodyObserver.observe(document.body, { childList: true, subtree: true });
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            bodyObserver.observe(document.body, { childList: true, subtree: true });
+        }, { once: true });
+    }
+
+    // ── 9. CSS backup ────────────────────────────────────────────────
     const style = document.createElement('style');
     style.textContent = `.adblocker-page-overlay,.adblocker-page-backdrop{display:none!important}`;
     document.documentElement.appendChild(style);
