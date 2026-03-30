@@ -1,8 +1,7 @@
 // ==UserScript==
-// @name         QMH Bypass v4.2
+// @name         QMH Bypass v4.3
 // @namespace    qmh-bypass
-// @version      4.2
-// @match        *://*.qmh.*/*
+// @version      4.3
 // @match        *://*.qmh.*/*
 // @match        *://video.qmh.*/*
 // @run-at       document-start
@@ -11,62 +10,47 @@
 
 (function () {
     'use strict';
+
     const HOME = location.href;
 
-    const BAD = [
-        'cruncherpatiencestoreroom.com',
-        'astronautlividlyreformer.com',
-        'simpleblocker',
-    ];
-    const isBad = url => url && BAD.some(d => url.includes(d));
+    // ── Compile regex một lần thay vì loop Array.some mỗi lần kiểm tra ──
+    const BAD_RE = /cruncherpatiencestoreroom\.com|astronautlividlyreformer\.com|simpleblocker/i;
+    const isBad = url => url && BAD_RE.test(url);
 
-    // ── 1. Override window.location bằng Proxy ──────────────────────
-    // location là special object, không defineProperty trực tiếp được
-    // → dùng history API + chặn ở tầng navigation event
+    // ── 1. Override location.assign / replace ────────────────────────
     const origAssign  = location.assign.bind(location);
     const origReplace = location.replace.bind(location);
-
     try {
-        // Một số browser cho phép override assign/replace trên object
-        window.location.assign  = url => { if (!isBad(url)) origAssign(url);  };
+        window.location.assign  = url => { if (!isBad(url)) origAssign(url); };
         window.location.replace = url => { if (!isBad(url)) origReplace(url); };
     } catch(e) {}
 
     // ── 2. Chặn window.open ──────────────────────────────────────────
     const origOpen = window.open.bind(window);
-    window.open = function(url, ...args) {
+    window.open = (url, ...args) => {
         if (isBad(url)) { console.log('🚫 window.open blocked:', url); return null; }
         return origOpen(url, ...args);
     };
 
-    // ── 3. Chặn <a> click và form submit ────────────────────────────
+    // ── 3. Chặn <a> click ───────────────────────────────────────────
     document.addEventListener('click', e => {
         const a = e.target.closest('a[href]');
         if (a && isBad(a.href)) { e.preventDefault(); e.stopImmediatePropagation(); }
     }, true);
 
-    // ── 4. Chặn beforeunload redirect (script gọi location.href = ...)
-    //       bằng cách intercept trên document level
+    // ── 4. Chặn history API ──────────────────────────────────────────
     const _pushState = history.pushState.bind(history);
     const _replState = history.replaceState.bind(history);
-    history.pushState = function(s, t, url) {
-        if (isBad(url)) return;
-        return _pushState(s, t, url);
-    };
-    history.replaceState = function(s, t, url) {
-        if (isBad(url)) return;
-        return _replState(s, t, url);
-    };
+    history.pushState    = (s, t, url) => isBad(url) ? undefined : _pushState(s, t, url);
+    history.replaceState = (s, t, url) => isBad(url) ? undefined : _replState(s, t, url);
 
-    // ── 5. Poll phát hiện nếu vẫn bị redirect ───────────────────────
+    // ── 5. Poll phát hiện redirect — dùng origReplace để tránh vòng lặp override ──
     setInterval(() => {
         if (isBad(location.href)) {
-            history.replaceState(null, '', HOME);
-            location.replace(HOME); // origReplace đã bị override ở trên, dùng bound version
+            _replState(null, '', HOME); // reset URL trước
+            origReplace(HOME);          // rồi mới navigate
         }
-    }, 50);
-    // Nếu cần dùng origReplace trong poll:
-    // setInterval(() => { if (isBad(location.href)) origReplace(HOME); }, 50);
+    }, 200); // 200ms là đủ, 50ms tốn CPU không cần thiết
 
     // ── 6. Giả mạo adblock = không có ───────────────────────────────
     window.adblockDetected = false;
@@ -74,23 +58,29 @@
     window.ninzoq = () => {};
     window.SimpleBlocker = { isBlocked: async () => false, check: async cb => { cb?.(false); return false; } };
 
-    // ── 7. Chặn script xấu inject vào DOM ───────────────────────────
+    // ── 7. MutationObserver duy nhất — gộp chặn script + xóa overlay ──
     new MutationObserver(muts => {
-        muts.forEach(m => m.addedNodes.forEach(node => {
-            if (node.nodeName === 'SCRIPT' && isBad(node.src)) {
-                node.remove();
-                console.log('🗑️ Script blocked:', node.src);
+        for (const m of muts) {
+            for (const node of m.addedNodes) {
+                if (node.nodeType !== 1) continue; // chỉ xử lý Element
+                // Chặn script xấu
+                if (node.nodeName === 'SCRIPT' && isBad(node.src)) {
+                    node.remove();
+                    console.log('🗑️ Script blocked:', node.src);
+                    continue;
+                }
+                // Xóa overlay adblock
+                if (node.classList?.contains('adblocker-page-overlay') ||
+                    node.classList?.contains('adblocker-page-backdrop')) {
+                    node.remove();
+                }
             }
-        }));
+        }
     }).observe(document.documentElement, { childList: true, subtree: true });
 
-    // ── 8. Ẩn overlay adblock ────────────────────────────────────────
+    // ── 8. CSS ẩn overlay (phòng trường hợp load trước observer) ────
     const style = document.createElement('style');
     style.textContent = `.adblocker-page-overlay,.adblocker-page-backdrop{display:none!important}`;
     document.documentElement.appendChild(style);
-
-    new MutationObserver(() => {
-        document.querySelectorAll('.adblocker-page-overlay').forEach(el => el.remove());
-    }).observe(document.documentElement, { childList: true, subtree: true });
 
 })();
