@@ -3,8 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.2
 // @description  Bypass SimpleBlocker và chặn click ẩn chuyển trang
-// @match        *://*.qmh.*/*
-// @match        *://video.qmh.*/*
+// @include      /^https?:\/\/([a-z0-9-]+\.)*qmh\.[a-z]{2,}(:\d+)?\/.*$/
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
