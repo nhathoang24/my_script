@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         VOZ - Hiển thị ngày tham gia
 // @namespace    https://voz.vn/
-// @version      5.0.0
+// @version      5.1
 // @description  Hiển thị ngày tham gia (Joined) dưới tên thành viên
 // @author       hoang
 // @match        https://voz.vn/t/*
@@ -9,7 +9,7 @@
 // @run-at       document-idle
 // ==/UserScript==
 
-(function () {
+(function() {
     'use strict';
 
     const cache = {};
@@ -31,10 +31,16 @@
             io.unobserve(entry.target);
             fetchAndRender(entry.target);
         }
-    }, { rootMargin: '200px 0px' });
+    }, {
+        rootMargin: '200px 0px'
+    });
 
     function getXfToken() {
-        try { return window.XF?.config?.csrf; } catch (e) { return null; }
+        try {
+            return window.XF?.config?.csrf;
+        } catch (e) {
+            return null;
+        }
     }
 
     function parseJoinDate(html) {
@@ -45,9 +51,7 @@
                 const dd = dt.nextElementSibling;
                 if (dd) {
                     const timeEl = dd.querySelector('time');
-                    return timeEl
-                        ? (timeEl.getAttribute('data-date') || timeEl.textContent.trim())
-                        : dd.textContent.trim();
+                    return timeEl ? timeEl.textContent.trim() : dd.textContent.trim();
                 }
             }
         }
@@ -69,30 +73,30 @@
         const url = `/u/${username}.${userId}/?${params}`;
 
         cache[userId] = fetch(url, {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json, text/javascript, */*; q=0.01',
-            },
-        })
-        .then(res => {
-            if (!res.ok) {
-                console.warn(`[VOZ JoinDate] ${userId} → ${res.status}`);
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json, text/javascript, */*; q=0.01',
+                },
+            })
+            .then(res => {
+                if (!res.ok) {
+                    console.warn(`[VOZ JoinDate] ${userId} → ${res.status}`);
+                    return null;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (!data) return null;
+                const html = data?.html?.content ?? data?.html ?? null;
+                if (!html) return null;
+                return parseJoinDate(html);
+            })
+            .catch(e => {
+                console.warn('[VOZ JoinDate] error', e);
                 return null;
-            }
-            return res.json();
-        })
-        .then(data => {
-            if (!data) return null;
-            const html = data?.html?.content ?? data?.html ?? null;
-            if (!html) return null;
-            return parseJoinDate(html);
-        })
-        .catch(e => {
-            console.warn('[VOZ JoinDate] error', e);
-            return null;
-        });
+            });
 
         return cache[userId];
     }
@@ -143,7 +147,10 @@
         }
     });
 
-    mo.observe(document.body, { childList: true, subtree: true });
+    mo.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
     document.querySelectorAll('article.message--post').forEach(observePost);
 
 })();
