@@ -4,7 +4,7 @@
 // @version      3.1
 // @description  Chặn popunder theo HÀNH VI + vô hiệu shouldShow/venorShouldShow. Không phụ thuộc domain.
 // @author       Local
-// @match        *://rphang.tld/*
+// @match        *://*.rphang.tld/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
