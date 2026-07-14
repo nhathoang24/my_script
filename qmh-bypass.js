@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Bypass Adblock & Block Popunder
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  Bypass SimpleBlocker và chặn click ẩn chuyển trang
-// @include      /^https?:\/\/([a-z0-9-]+\.)*qmh\.[a-z]{2,}(:\d+)?\/.*$/
+// @match        *://qmh.tld/*
+// @match        *://*.qmh.tld/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
