@@ -1,11 +1,10 @@
 // ==UserScript==
 // @name         Rphang - Anti Popunder
 // @namespace    https://github.com/local/rphang-blocker
-// @version      3.0
+// @version      3.1
 // @description  Chặn popunder theo HÀNH VI + vô hiệu shouldShow/venorShouldShow. Không phụ thuộc domain.
 // @author       Local
-// @match        *://rphang.bar/*
-// @match        *://*.rphang.bar/*
+// @match        *://rphang.tld/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
