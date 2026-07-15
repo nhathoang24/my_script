@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Bypass Adblock & Block Popunder
+// @name         qmh-bypass
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @description  Bypass SimpleBlocker và chặn click ẩn chuyển trang
 // @match        *://qmh.tld/*
 // @match        *://*.qmh.tld/*
