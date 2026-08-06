@@ -3,7 +3,7 @@
 // @namespace    https://github.com/siritami
 // @version      2.4.0
 // @description  Replace the QMH player with a simple HLS player and download its resolved stream
-// @match        https://qmh.monster/*
+// @match        https://qmh.red/*
 // @grant        none
 // @allFrames    true
 // @require      https://cdn.jsdelivr.net/npm/hls.js@1.6.13/dist/hls.min.js
